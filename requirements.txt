@@ -1,0 +1,2 @@
+eel
+eel[jinja2]
