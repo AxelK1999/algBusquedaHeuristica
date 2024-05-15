@@ -4,7 +4,7 @@ import eel
 import random
 from datetime import datetime
 
-import algoritmosBusquedaHeuristicos.escaladaSimple
+import algBusquedaHeuristica
 
 eel.init('web')
 
@@ -25,7 +25,7 @@ def get_ip():
     eel.prompt_alerts('127.0.0.1')
 
 
-algoritmosBusquedaHeuristicos.escaladaSimple.test()
+algBusquedaHeuristica.test()
 
 eel.start('index.html')
 
