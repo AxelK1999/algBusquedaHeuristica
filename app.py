@@ -1,4 +1,4 @@
-import tkinter as tk
+from tkinter import *
 import networkx as nx
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -12,27 +12,152 @@ class EspacioBusqueda:
         self.estado_inicial = "A"
         self.estado_final = "G"
 
+class ScrollableFrame(Frame):
+    def __init__(self, container, *args, **kwargs):
+        super().__init__(container, *args, **kwargs)
+        self.canvas = Canvas(self)
+        scrollbar = Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.scrollable_frame = Frame(self.canvas)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(
+                scrollregion=self.canvas.bbox("all")
+            )
+        )
+
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+        #configurar alto y acnho aqui:
+        self.canvas.configure(yscrollcommand=scrollbar.set, width=450)
+
+        self.canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+class ScrollableFrameHorizontal(Frame):
+    def __init__(self, container, *args, **kwargs):
+        super().__init__(container, *args, **kwargs)
+        canvas = tk.Canvas(self)
+        scrollbar = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
+        scrollbar_h = ttk.Scrollbar(self, orient="horizontal", command=canvas.xview)
+        self.scrollable_frame = ttk.Frame(canvas)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+
+        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.configure(xscrollcommand=scrollbar_h.set)
+
+        scrollbar_h.pack(side="bottom", fill="x")
+        scrollbar.pack(side="right", fill="y")
+        canvas.pack(side="left", fill="both", expand=True)
+
+
 
 class interfazCargaDeGrafo:
-    def __init__(self):
-        self.frame = tk.Frame()
-        frame = self.frame.pack(fill=tk.BOTH, expand=True)
-        tk.Label(frame, text="Etiqueta en Frame 1")
+    
+    estados = []
+    
+    def __init__(self, raiz):
+        self.frame = Frame(raiz)
+        self.frame.config(width=500, height=500) #bg="lightblue"
+        self.frame.pack(side="left", fill="both", expand=True)
+    
+        self.frame.bind("<Configure>", self.on_window_resize)
         
+        self.titulo = Label(self.frame,text="Carga de datos de grafo",font=(18))
+        self.titulo.place(x=500/3.5,y=20)
 
+        #------------------- Fila 1 -----------------------
+        self.lblNroEstados = Label(self.frame,text="Nro. de estados: ")
+        self.lblNroEstados.place(x=20, y=60)
+        
+        self.inputNroEstados = Entry(raiz, width=5)
+        self.inputNroEstados.place(x= 140, y=60)
+    
+        self.btnCrearEstados = Button(self.frame, text="crear estados", command = self.on_click_crear_estados)
+        self.btnCrearEstados.place(x=200, y= 58)
+        
+        #------------------------------------------------
+        self.titleTableEstados = Label(self.frame,text="Nro.                          Name                          Pos.(x,y)                        Conexiones             ")
+        self.titleTableEstados.place(x=20, y=100)
+    
+    
+        self.frameEstados = ScrollableFrame(self.frame)
+        self.frameEstados.place(x=10, y=120)
+        #-----------------------------------------------
+       
+        self.btnCargaAleatoriaEstados = Button(self.frame, text="Carga de estados aleatorio", command = self.on_click_crear_estados)
+        self.btnCargaAleatoriaEstados.place(x=180, y= 400)
+        
+        #----------------------------------------------
+        
+        linea = Label(self.frame, text="----------------------------------------------------------------------------------------------------------")
+        linea.place(x=0, y=425)
+        
+        # Lista de opciones para el menú desplegable
+        opciones = ["Opción 1", "Opción 2", "Opción 3", "Opción 4"]
 
-
+        # Variable de control para el menú desplegable
+        opcion_seleccionada = StringVar(raiz)
+        opcion_seleccionada.set(opciones[0])  # Opción predeterminada
+        self.inputEstadoInicial = OptionMenu(raiz, opcion_seleccionada, *opciones, command=self.seleccionar_opcion)
+        self.inputEstadoInicial.place(x=20, y=450)
+        
+        self.inputEstadoFinal = OptionMenu(raiz, opcion_seleccionada, *opciones, command=self.seleccionar_opcion)
+        self.inputEstadoFinal.place(x=20, y=480)
+        
+        
+    # Función para manejar la selección del menú desplegable
+    def seleccionar_opcion(opcion):
+        print("Opción seleccionada:", opcion)  
+    
+    def on_window_resize(self, event):
+        self.titulo.place(x=event.width/3.5,y=20)
+        
+    def on_click_crear_estados(self):
+        #print("Numero de estados: ", self.inputNroEstados.get())
+        fila = []
+        cantidadNodos = len(self.estados) + 1 
+        
+        frame = Frame(self.frameEstados.scrollable_frame)
+        frame.config(width=500, height=30) #bg="lightblue"
+        frame.pack(fill="both", expand=True)
+        
+        
+        nroEstados = Label(frame , text = cantidadNodos + 1).place(x=15 , y=0)
+        nroEstado = Label(frame , text = cantidadNodos + 1).place(x=15 , y=0)
+        name = Entry(frame, width=15).place(x= 80, y=0)
+        posX = Entry(frame, width=4).place(x= 220, y=0)
+        posY = Entry(frame, width=4).place(x= 250, y=0)
+        conexiones = Entry(frame, width=15).place(x= 340, y=0)
+        
+        fila.append(name)
+        fila.append(posX)
+        fila.append(posY)
+        fila.append(conexiones)
+        
+        self.estados.append(fila)
+        
+        print(self.estados)
+          
 class InterfazGrafica:
-    def __init__(self, master):
-        self.master = master
+    def __init__(self, raiz):
+        self.raiz = raiz
         self.espacio_busqueda = EspacioBusqueda()
 
-        self.frame = tk.Frame(self.master)
-        self.frame.pack(fill=tk.BOTH, expand=True)
+        self.frame = Frame(self.raiz)
+        self.frame.pack(side="left",fill=BOTH, expand=True)
 
         self.fig, self.ax = plt.subplots()
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        self.canvas.get_tk_widget().pack(fill="both", expand=True)
 
         self.dibujar_grafo()
 
@@ -58,11 +183,14 @@ class InterfazGrafica:
 
 
 def main():
-    root = tk.Tk()
-    root.title("Espacio de Búsqueda")
-    #app = InterfazGrafica(root)
-    interfazCargaDeGrafo(root)
-    root.mainloop()
+    raiz = Tk()
+    raiz.title("Espacio de Búsqueda")
+    raiz.resizable(True,True) # Si se permitira redimencionar el tamaño en alto y ancho
+    # raiz.geometry("800x800") # Alto y ancho de la ventana => Se especifica esta propiedad a los Frame para que el raiz se adapte a los mismos
+    
+    interfazCargaDeGrafo(raiz)
+    InterfazGrafica(raiz)
+    raiz.mainloop()
 
 
 if __name__ == "__main__":
