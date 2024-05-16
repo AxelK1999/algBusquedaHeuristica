@@ -153,6 +153,28 @@ class interfazCargaDeGrafo:
         self.btnResolver = Button(self.frame, text="Ejecutar algoritmo", command = self.on_click_crear_estados)
         self.btnResolver.place(x=180,y=650)
         
+        
+        #----------------------
+        barra4 = Label(self.frame, text="___________________________________________________________________________________________________________________________________")
+        barra4.place(x=0,y=680)
+        
+        
+        self.lblTitleResult = Label(self.frame,text="Resultado",font=(18))
+        self.lblTitleResult.place(x=500/2.8,y=705)
+        
+        self.lblEstadoFinal = Label(self.frame,text="Tiempo de resolucion: ")
+        self.lblEstadoFinal.place(x=20,y=735)
+        
+        self.btnTerminar = Button(self.frame, text="Terminar", command = self.on_click_crear_estados)
+        self.btnTerminar.place(x=300,y=765)
+        
+        self.btnPasoSiguiente = Button(self.frame, text="Siguinte paso", command = self.on_click_crear_estados)
+        self.btnPasoSiguiente.place(x=200,y=765)
+        
+        self.btnPasoAnterior = Button(self.frame, text="Paso anterior", command = self.on_click_crear_estados)
+        self.btnPasoAnterior.place(x=100,y=765)
+        
+        
     # Función para manejar la selección del menú desplegable
     def seleccionar_opcion(opcion):
         print("Opción seleccionada:", opcion)  
@@ -256,11 +278,11 @@ class interfazGrafo:
 def main():
     raiz = Tk()
     raiz.title("Espacio de Búsqueda")
-    raiz.resizable(True,True) # Si se permitira redimencionar el tamaño en alto y ancho
+    raiz.resizable(False,True) # Si se permitira redimencionar el tamaño en alto y ancho
     raiz.geometry("1080x950") # Alto y ancho de la ventana => Se especifica esta propiedad a los Frame para que el raiz se adapte a los mismos
     
     interfazCargaDeGrafo(raiz)
-    interfazGrafoResultante(raiz)
+    #interfazGrafoResultante(raiz)
     interfazGrafo(raiz)
     raiz.mainloop()
 
