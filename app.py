@@ -59,7 +59,6 @@ class ScrollableFrameHorizontal(Frame):
         canvas.pack(side="left", fill="both", expand=True)
 
 
-
 class interfazCargaDeGrafo:
     
     estados = []
@@ -93,26 +92,66 @@ class interfazCargaDeGrafo:
         self.frameEstados.place(x=10, y=120)
         #-----------------------------------------------
        
-        self.btnCargaAleatoriaEstados = Button(self.frame, text="Carga de estados aleatorio", command = self.on_click_crear_estados)
-        self.btnCargaAleatoriaEstados.place(x=180, y= 400)
+        self.btnCargaAleatoriaEstados = Button(self.frame, text="Cargar datos de estados aleatorio", command = self.on_click_crear_estados)
+        self.btnCargaAleatoriaEstados.place(x=160, y= 390)
+        
+        barra1 = Label(self.frame, text="___________________________________________________________________________________________________________________________________")
+        barra1.place(x=0,y=415)
         
         #----------------------------------------------
-        
-        linea = Label(self.frame, text="----------------------------------------------------------------------------------------------------------")
-        linea.place(x=0, y=425)
+        # En lugar de posicionar elementos con place -> hacerlo con pack (lo que se hace dentro del frame a continuacion):
+        frame = Frame(self.frame)
+        frame.config(width=500, height=500)
+        frame.place(x=0, y=440)
         
         # Lista de opciones para el menú desplegable
         opciones = ["Opción 1", "Opción 2", "Opción 3", "Opción 4"]
 
         # Variable de control para el menú desplegable
-        opcion_seleccionada = StringVar(raiz)
+        opcion_seleccionada = StringVar(frame)
         opcion_seleccionada.set(opciones[0])  # Opción predeterminada
-        self.inputEstadoInicial = OptionMenu(raiz, opcion_seleccionada, *opciones, command=self.seleccionar_opcion)
-        self.inputEstadoInicial.place(x=20, y=450)
         
-        self.inputEstadoFinal = OptionMenu(raiz, opcion_seleccionada, *opciones, command=self.seleccionar_opcion)
-        self.inputEstadoFinal.place(x=20, y=480)
         
+        self.lblEstadoInicial = Label(frame,text="Estado inicial: ")
+        self.lblEstadoInicial.pack(side="left",padx=15, pady=5)
+        
+        self.inputEstadoInicial = OptionMenu(frame, opcion_seleccionada, *opciones, command=self.seleccionar_opcion)
+        self.inputEstadoInicial.pack(side="left", padx=10, pady=5)
+        
+        self.lblEstadoFinal = Label(frame,text="Estado final: ")
+        self.lblEstadoFinal.pack(side="left", padx=15, pady=5)
+        
+        self.inputEstadoFinal = OptionMenu(frame, opcion_seleccionada, *opciones, command=self.seleccionar_opcion)
+        self.inputEstadoFinal.pack(side="left", padx=10, pady=5)
+        
+        #----------------------------------------------------------------
+        
+        barra2 = Label(self.frame, text="___________________________________________________________________________________________________________________________________")
+        barra2.place(x=0,y=475)
+        
+        self.btnCargarGrafo = Button(self.frame, text="Cargar grafo", command = self.on_click_crear_estados)
+        self.btnCargarGrafo.place(x=200,y=510)
+        
+        barra3 = Label(self.frame, text="___________________________________________________________________________________________________________________________________")
+        barra3.place(x=0,y=535)
+        
+        self.lblEstadoFinal = Label(self.frame,text="Algoritmo de busqueda: ")
+        self.lblEstadoFinal.place(x=100,y=560)
+        
+        self.inputEstadoFinal = OptionMenu(self.frame, opcion_seleccionada, *opciones, command=self.seleccionar_opcion)
+        self.inputEstadoFinal.place(x=100,y=590)
+        
+        self.lblEstadoFinal = Label(self.frame,text="Funcion heuristica: ")
+        self.lblEstadoFinal.place(x=290,y=560)
+        
+        self.inputEstadoFinal = OptionMenu(self.frame, opcion_seleccionada, *opciones, command=self.seleccionar_opcion)
+        self.inputEstadoFinal.place(x=290,y=590)
+        
+        barra4 = Label(self.frame, text="___________________________________________________________________________________________________________________________________")
+        barra4.place(x=0,y=620)
+        
+        self.btnResolver = Button(self.frame, text="Ejecutar algoritmo", command = self.on_click_crear_estados)
+        self.btnResolver.place(x=180,y=650)
         
     # Función para manejar la selección del menú desplegable
     def seleccionar_opcion(opcion):
@@ -130,9 +169,7 @@ class interfazCargaDeGrafo:
         frame.config(width=500, height=30) #bg="lightblue"
         frame.pack(fill="both", expand=True)
         
-        
-        nroEstados = Label(frame , text = cantidadNodos + 1).place(x=15 , y=0)
-        nroEstado = Label(frame , text = cantidadNodos + 1).place(x=15 , y=0)
+        nroEstado = Label(frame , text = cantidadNodos).place(x=15 , y=0)
         name = Entry(frame, width=15).place(x= 80, y=0)
         posX = Entry(frame, width=4).place(x= 220, y=0)
         posY = Entry(frame, width=4).place(x= 250, y=0)
@@ -147,13 +184,13 @@ class interfazCargaDeGrafo:
         
         print(self.estados)
           
-class InterfazGrafica:
+class interfazGrafoResultante:
     def __init__(self, raiz):
         self.raiz = raiz
         self.espacio_busqueda = EspacioBusqueda()
 
         self.frame = Frame(self.raiz)
-        self.frame.pack(side="left",fill=BOTH, expand=True)
+        self.frame.pack(side="bottom",fill=BOTH, expand=True)
 
         self.fig, self.ax = plt.subplots()
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
@@ -178,7 +215,41 @@ class InterfazGrafica:
         nx.draw_networkx_nodes(G, pos, nodelist=[self.espacio_busqueda.estado_final],
                                node_color='red', node_size=700)
 
-        self.ax.set_title('Espacio de Búsqueda')
+        self.ax.set_title('Grafo resultante: ')
+        self.canvas.draw()
+
+class interfazGrafo:
+    def __init__(self, raiz):
+        self.raiz = raiz
+        self.espacio_busqueda = EspacioBusqueda()
+
+        self.frame = Frame(self.raiz)
+        self.frame.pack(side="bottom" , fill=BOTH, expand=True)
+
+        self.fig, self.ax = plt.subplots()
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
+        self.canvas.get_tk_widget().pack(fill="both", expand=True)
+
+        self.dibujar_grafo()
+
+    def dibujar_grafo(self):
+        G = nx.Graph()
+        G.add_nodes_from(self.espacio_busqueda.estados)
+        G.add_edges_from(self.espacio_busqueda.conexiones)
+
+        pos = nx.spring_layout(G)  # Algoritmo de disposición de nodos
+
+        nx.draw_networkx_nodes(G, pos, node_size=700, node_color='skyblue')
+        nx.draw_networkx_edges(G, pos, width=2)
+        nx.draw_networkx_labels(G, pos, font_size=12, font_family='sans-serif')
+
+        # Resaltar estado inicial y final
+        nx.draw_networkx_nodes(G, pos, nodelist=[self.espacio_busqueda.estado_inicial],
+                               node_color='green', node_size=700)
+        nx.draw_networkx_nodes(G, pos, nodelist=[self.espacio_busqueda.estado_final],
+                               node_color='red', node_size=700)
+
+        self.ax.set_title('Grafo: ')
         self.canvas.draw()
 
 
@@ -186,13 +257,13 @@ def main():
     raiz = Tk()
     raiz.title("Espacio de Búsqueda")
     raiz.resizable(True,True) # Si se permitira redimencionar el tamaño en alto y ancho
-    # raiz.geometry("800x800") # Alto y ancho de la ventana => Se especifica esta propiedad a los Frame para que el raiz se adapte a los mismos
+    raiz.geometry("1080x950") # Alto y ancho de la ventana => Se especifica esta propiedad a los Frame para que el raiz se adapte a los mismos
     
     interfazCargaDeGrafo(raiz)
-    InterfazGrafica(raiz)
+    interfazGrafoResultante(raiz)
+    interfazGrafo(raiz)
     raiz.mainloop()
 
 
 if __name__ == "__main__":
     main()
-
