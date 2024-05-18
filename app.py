@@ -353,6 +353,9 @@ def main():
     interfazCargaDeGrafo(raiz)
     interfazGrafoResultante(raiz)
     interfazGrafo(raiz)
+    
+    algBusquedaHeuristica.test()
+    
     raiz.mainloop()
 
 
