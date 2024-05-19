@@ -64,26 +64,29 @@ class ScrollableFrameHorizontal(Frame):
 
 class interfazCargaDeGrafo:
     
-    estados = []
-    
+    grafo = []
+    estadoInicial = {}
+    estadoFinal = {}
+        
     def __init__(self, raiz):
+        self.raiz = raiz
+        
         self.frame = Frame(raiz)
         self.frame.config(width=500, height=500) #bg="lightblue"
         self.frame.pack(side="left", fill="both", expand=True)
     
-        self.frame.bind("<Configure>", self.on_window_resize)
-        
+        #self.frame.bind("<Configure>", self.on_window_resize) # responsive
         self.titulo = Label(self.frame,text="Carga de datos de grafo",font=(18))
         self.titulo.place(x=500/3.5,y=20)
 
         self.seccionCargaDeEstados(raiz)
         
-        barra3 = Label(self.frame, text="___________________________________________________________________________________________________________________________________")
+        barra3 = Label(self.frame, text="____________________________________________________________________________________________________")
         barra3.place(x=0,y=535)
         
         self.seccionSeleccionAlgH(raiz)
         
-        barra4 = Label(self.frame, text="___________________________________________________________________________________________________________________________________")
+        barra4 = Label(self.frame, text="____________________________________________________________________________________________________")
         barra4.place(x=0,y=680)
         
         self.seccionResultado(raiz)
@@ -97,23 +100,20 @@ class interfazCargaDeGrafo:
     
         self.btnCrearEstados = Button(self.frame, text="crear estados", command = self.on_click_crear_estados)
         self.btnCrearEstados.place(x=200, y= 58)
-        #------------------------------------------------
-        self.titleTableEstados = Label(self.frame,text="Nro.                          Name                          Pos.(x,y)                        Conexiones             ")
+
+        self.titleTableEstados = Label(self.frame,text="Nro.               Name(M != m)                     Pos.(x,y)                        Conexiones(M != m)          ")
         self.titleTableEstados.place(x=20, y=100)
     
         self.frameEstados = ScrollableFrame(self.frame)
         self.frameEstados.place(x=10, y=120)
-        #-----------------------------------------------
-       
+    
         self.btnCargaAleatoriaEstados = Button(self.frame, text="Cargar datos de estados en forma aleatorio", command = self.on_click_crear_estados)
         self.btnCargaAleatoriaEstados.place(x=140, y= 390)
         
-        #----------------------------------------------
-    
         self.btnCargarGrafo = Button(self.frame, text="Cargar grafo", command = self.on_click_cargar_grafo)
         self.btnCargarGrafo.place(x=200,y=425)
     
-        barra2 = Label(self.frame, text="___________________________________________________________________________________________________________________________________")
+        barra2 = Label(self.frame, text="____________________________________________________________________________________________________")
         barra2.place(x=0,y=450)
         
         # En lugar de posicionar elementos con place -> hacerlo con pack (lo que se hace dentro del frame a continuacion):
@@ -121,24 +121,34 @@ class interfazCargaDeGrafo:
         frame.config(width=500, height=500)
         frame.place(x=0, y=490)
         
-        # Lista de opciones para el menú desplegable
-        opciones = ["Estado A", "Estado B"]
-
-        # Variable de control para el menú desplegable
-        opcion_seleccionada = StringVar(self.frame)
-        opcion_seleccionada.set(opciones[0])  # Opción predeterminada
+        self.frameOptionMenuInputEstadosInicialFinal = frame
+        self.seccionSeleccionEstadoInicialFinal(frame)
+    
+        # apunte : ver propiedades y funciones de un elemento/objeto en python
+        print(dir(self.inputEstadoFinal))
         
-        
+    def seccionSeleccionEstadoInicialFinal(self, frame, opciones=["Ninguno"]):    
         self.lblEstadoInicial = Label(frame,text="Estado inicial: ")
         self.lblEstadoInicial.pack(side="left",padx=15, pady=5)
         
-        self.inputEstadoInicial = OptionMenu(frame, opcion_seleccionada, *opciones, command=self.seleccionar_opcion)
+        self.opcionesDeEstadosInicialFinal = opciones
+        #self.opcionesEstadoInicial = ["Ninguno"]
+        self.opcionSeleccionadaEstadoInicial = StringVar(self.frame)
+        self.opcionSeleccionadaEstadoInicial.set("Ninguno")  # Opción predeterminada
+           
+        self.inputEstadoInicial = OptionMenu(frame, self.opcionSeleccionadaEstadoInicial, *self.opcionesDeEstadosInicialFinal, command=self.seleccionar_opcion)
         self.inputEstadoInicial.pack(side="left", padx=10, pady=5)
         
+        #-------
         self.lblEstadoFinal = Label(frame,text="Estado final: ")
         self.lblEstadoFinal.pack(side="left", padx=15, pady=5)
         
-        self.inputEstadoFinal = OptionMenu(frame, opcion_seleccionada, *opciones, command=self.seleccionar_opcion)
+        
+        #self.opcionesEstadoFinal = ["Ninguno","Ninguno2"]
+        self.opcionSeleccionadaEstadoFinal = StringVar(self.frame)
+        self.opcionSeleccionadaEstadoFinal.set("Ninguno")  # Opción predeterminada
+        
+        self.inputEstadoFinal = OptionMenu(frame, self.opcionSeleccionadaEstadoFinal, *self.opcionesDeEstadosInicialFinal, command=self.seleccionar_opcion)
         self.inputEstadoFinal.pack(side="left", padx=10, pady=5)
         
     def seccionSeleccionAlgH(self,raiz):
@@ -166,7 +176,7 @@ class interfazCargaDeGrafo:
         self.inputEstadoFinal = OptionMenu(self.frame, opcion_seleccionadaFH, *funcHeuristicaOpciones, command=self.seleccionar_opcion)
         self.inputEstadoFinal.place(x=290,y=590)
         
-        barra4 = Label(self.frame, text="___________________________________________________________________________________________________________________________________")
+        barra4 = Label(self.frame, text="____________________________________________________________________________________________________")
         barra4.place(x=0,y=620)
         
         self.btnResolver = Button(self.frame, text="Ejecutar algoritmo", command = self.on_click_crear_estados)
@@ -189,11 +199,26 @@ class interfazCargaDeGrafo:
         self.btnPasoAnterior.place(x=100,y=765)
         
     # Función para manejar la selección del menú desplegable
-    def seleccionar_opcion(opcion):
+    def on_envent_seleccion_estado_Inicial(opcion):
+        # resaltar estado seleccionado
+        # estado anterior pintar como estado no inicial o final
+        # actualizar variable con estado
+        # ejecutar verificacion de activacion de boton, ejecutar algoritmo
+        print("Opción seleccionada:", opcion)  
+    
+    def on_envent_seleccion_estado_Final(opcion):
+        # resaltar estado seleccionado
+        # estado anterior pintar como estado no inicial o final
+        # actualizar variable con estado
+        # ejecutar verificacion de activacion de boton, ejecutar algoritmo
+        
         print("Opción seleccionada:", opcion)  
     
     def on_window_resize(self, event):
         self.titulo.place(x=event.width/3.5,y=20)
+    
+    
+    # ---------- Modulos de control de datos de entrada --------------
     
     def verificar_numero(self, valor):
         try:
@@ -202,6 +227,31 @@ class interfazCargaDeGrafo:
         except ValueError:
             messagebox.showwarning("Advertencia", f"'{valor}' no es un número válido.")
             return False
+    
+    def es_letra_sola(self, valor):
+        
+        result = isinstance(valor, str) and len(valor) == 1 and valor.isalpha()
+        #if not result:
+        #    messagebox.showwarning("Advertencia", f"'{valor}'. Debe ser una letra unica (Ej : A)")
+            
+        return result
+        #isinstance(letra, str): Verifica que el valor proporcionado sea una cadena.
+        #len(letra) == 1: Verifica que la longitud de la cadena sea exactamente 1, asegurando que se trata de un solo carácter.
+        #letra.isalpha(): Verifica que el carácter sea una letra del alfabeto.         
+    
+    def verificarFormatoConexiones(self, conexiones):
+        # letra.upper() # --> Convierte una letra a su versión mayúscula
+        #elementos = valores.split(',') # => input: valores = "a, b, c, 1, d, e, ab, f" output : ['a', 'b', 'c', '1', 'd', 'e', 'ab','f']
+        # Controlar con es_letra_sola()
+        valores = conexiones.split(',')
+        for valor in valores:
+            if not (self.es_letra_sola(valor)):
+                messagebox.showwarning("Advertencia", f"' La conexion: {valor}'. Debe ser una letra unica (Ej : A)")
+                return False
+        
+        return True
+          
+    # ----------------------------------------------------------------          
             
     def on_click_crear_estados(self):
         
@@ -228,25 +278,79 @@ class interfazCargaDeGrafo:
             Entry(frame, width=15).place(x= 80, y=0) #name
             Entry(frame, width=4).place(x= 220, y=0) #posX
             Entry(frame, width=4).place(x= 250, y=0) #posY
-            Entry(frame, width=15).place(x= 340, y=0) #conexiones
+            Entry(frame, width=17).place(x= 340, y=0) #conexiones
           
             if (cantidadNodos + 1) > float(estados_crear_input):
                 break
                        
     def on_click_cargar_grafo(self):
-        
-        
-        
-        # Nota: lectura de valores de elementos del frame (estados)
+        self.grafo = []
+        # apunte: lectura de valores de elementos del frame (estados)
         for fila in self.frameEstados.scrollable_frame.winfo_children(): # Lee los hijos del frame scroll
-            print("--->",fila.winfo_children()[1].get()) # frame fila = [Label, entry, entry, entry, entry]
-            
-            
-            
+            #print("--->",fila.winfo_children()[1].get()) # frame fila = [Label, entry, entry, entry, entry]
             #for columna in fila.winfo_children(): # Lee los hijos del frame fila que se encuntra en el padre frame scroll
             #    if isinstance(columna, Entry):
             #        print(columna.get())
-   
+            name = fila.winfo_children()[1].get()
+            posX = fila.winfo_children()[2].get()
+            posY = fila.winfo_children()[3].get()
+            conexiones = fila.winfo_children()[4].get()
+            
+            if not self.es_letra_sola(name):
+                messagebox.showwarning("Advertencia", f"'{name}'. Debe ser una letra unica (Ej : A)")
+                return
+            if not ( self.verificar_numero(posX) and self.verificar_numero(posY) ):
+                return
+            if not (self.verificarFormatoConexiones(conexiones) ):
+                return
+            
+            self.grafo.append({"name":name,"posicion":{"x":posX,"y":posY}, "aristas": conexiones.split(',')})
+            
+        self.clearFramesPartiendoIndice(self.raiz, 1)
+        
+        print("\n\nGrafo cargado: ", self.grafo,"\n")
+        try:
+            self.pintarGrafo(self.grafo)
+        except Exception as e:
+            messagebox.showwarning("Advertencia", f"'{e}': Verifique conexiones a nodos inexsistentes")
+        
+        self.actualizarOpcionesEstadosInicialFinal(self.grafo)    
+     
+    def actualizarOpcionesEstadosInicialFinal(self, grafo):
+        opciones = []
+        
+        for nodo in grafo:
+            opciones.append(nodo["name"])
+        
+        for elemento in self.frameOptionMenuInputEstadosInicialFinal.winfo_children():
+            elemento.destroy()
+
+        self.seccionSeleccionEstadoInicialFinal(self.frameOptionMenuInputEstadosInicialFinal, opciones)
+         
+    def pintarGrafo(self, grafo):
+        #cantidadNodos = len(grafo)
+        pos = {}
+        conexiones = []
+        nodos = []
+        
+        for nodo in grafo:
+            for arita in nodo["aristas"]:
+                conexiones.append((nodo["name"],arita))
+                
+            pos[nodo["name"]] = ( float( nodo["posicion"]["x"] ), float( nodo["posicion"]["y"] ) )
+            nodos.append(nodo["name"])
+        
+        self.G = interfazGrafo(self.raiz)
+        self.G.dibujar_grafo(nodos, conexiones, pos)
+               
+    def clearFramesPartiendoIndice(self, frame ,index):
+        countFrames = 0
+        for widget in frame.winfo_children():
+            if isinstance(widget, Frame):
+                countFrames = countFrames + 1
+            if(countFrames > index):
+                widget.destroy()     
+            
     def clearElementsOfFrame(self, frame):
         for widget in frame.winfo_children():
             widget.destroy()
@@ -292,36 +396,45 @@ class interfazGrafo:
         self.espacio_busqueda = EspacioBusqueda()
 
         self.frame = Frame(self.raiz)
-        self.frame.pack(side="bottom" , fill=BOTH, expand=True)
+        self.frame.pack(side="top" , fill=BOTH, expand=True)
 
         self.fig, self.ax = plt.subplots()
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
         self.canvas.get_tk_widget().pack(fill="both", expand=True)
 
-        self.dibujar_grafo()
+        #self.dibujar_grafo()
 
-    def dibujar_grafo(self):
-        G = nx.Graph()
+    def dibujar_grafo(self, nodos, conexiones, posiciones):
+        self.G = nx.Graph()
         
-        G.add_nodes_from(["A", "B", "C", "D", "E"])
-        G.add_edges_from([("A", "B"), ("A", "C"), ("B", "D"), ("B", "E")])
+        self.nodos = nodos
+        self.conexiones = conexiones
+        self.pos = posiciones
         
-        pos = {
-            "A":(-10,50),
-            "B":(45,66),
-            "C":(36,14),
-            "D":(50,35),
-            "E":(70,25)
-        }
+        self.G.add_nodes_from(nodos)
+        self.G.add_edges_from(conexiones)
         
-        nx.draw_networkx_nodes(G, pos=pos, node_size=500, node_color='skyblue')
-        nx.draw_networkx_labels(G, pos=pos, font_size=10, font_family='sans-serif')
+        #self.G.add_nodes_from(["A", "B", "C", "D", "E"])
+        #self.G.add_edges_from([("A", "B"),("B", "A"), ("A", "C"), ("B", "D"), ("B", "E")])
+        #pos = {"A":(-10,50),}
         
-        nx.draw_networkx_edges(G, pos=pos, width=2)
+        nx.draw_networkx_nodes(self.G, pos=self.pos, node_size=500, node_color='skyblue')
+        nx.draw_networkx_labels(self.G, pos=self.pos, font_size=10, font_family='sans-serif')
+        
+        nx.draw_networkx_edges(self.G, pos=self.pos, width=2)
       
-        
+        self.ax.margins(0.2)
         self.ax.set_title('Grafo:')
-         
+        self.canvas.draw()
+
+    def resaltar_estados_inicial_final(self, nameEstadoInicial, nameEstadoFinal):
+        
+        nx.draw_networkx_nodes(self.G, self.pos, nodelist=[nameEstadoInicial], node_color='green', node_size=500)
+        nx.draw_networkx_nodes(self.G, self.pos, nodelist=[nameEstadoFinal], node_color='red', node_size=500)
+        
+        self.canvas.draw()
+
+    def dibujar_heurisitca_cada_nodo(self, tablaH):
         # Añadir etiquetas adicionales
         labels = {
             "A": "H = 68",
@@ -331,18 +444,8 @@ class interfazGrafo:
             "E": "H = 2"
         }
         
-        for node, (x, y) in pos.items():
-            self.ax.annotate(labels[node], (x, y), textcoords="offset points", xytext=(30, -5), ha='center')
-
-        self.ax.margins(0.2)
-        self.ax.set_title('Grafo:')
-
-        # Resaltar estado inicial y final
-        nx.draw_networkx_nodes(G, pos, nodelist=["A"], node_color='green', node_size=500)
-        nx.draw_networkx_nodes(G, pos, nodelist=["C"], node_color='red', node_size=700)
-        
-        self.canvas.draw()
-
+        #for node, (x, y) in self.pos.items():
+        #    self.ax.annotate(labels[node], (x, y), textcoords="offset points", xytext=(30, -5), ha='center')
 
 def main():
     raiz = Tk()
@@ -351,8 +454,8 @@ def main():
     raiz.geometry("1080x800") # Alto y ancho de la ventana => Se especifica esta propiedad a los Frame para que el raiz se adapte a los mismos
     
     interfazCargaDeGrafo(raiz)
-    interfazGrafoResultante(raiz)
-    interfazGrafo(raiz)
+    #interfazGrafoResultante(raiz)
+    #interfazGrafo(raiz)
     
     algBusquedaHeuristica.test()
     
@@ -378,20 +481,6 @@ Pendientes:
     (8) Pintar estado inicial y final al ser seleccionados
      .....
 """
-
-
-def es_letra_sola(valor):
-    return isinstance(valor, str) and len(valor) == 1 and valor.isalpha()
-    #isinstance(letra, str): Verifica que el valor proporcionado sea una cadena.
-    #len(letra) == 1: Verifica que la longitud de la cadena sea exactamente 1, asegurando que se trata de un solo carácter.
-    #letra.isalpha(): Verifica que el carácter sea una letra del alfabeto.
-
-# letra.upper() # --> Convierte una letra a su versión mayúscula
-
-#elementos = valores.split(',') # => input: valores = "a, b, c, 1, d, e, ab, f" output : ['a', 'b', 'c', '1', 'd', 'e', 'ab','f']
-# Controlar con es_letra_sola()
-
-
 def generar_grafo_barabasi_albert(n, m):
     G = nx.barabasi_albert_graph(n, m)
     nx.draw(G, with_labels=True)
