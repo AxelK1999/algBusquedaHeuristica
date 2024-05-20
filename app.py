@@ -9,7 +9,6 @@ import algBusquedaHeuristica
 import random
 import string
 
-
 class EspacioBusqueda:
     def __init__(self):
         self.estados = ["A", "B", "C", "D", "E", "F", "G"]
@@ -230,54 +229,83 @@ class interfazCargaDeGrafo:
         self.titulo.place(x=event.width/3.5,y=20)
      
     def on_click_carga_datos_grafo_automatico(self):
+        # Cambiar texto de boton de carga a cargando..
+        grafo_and_posiciones = self.generar_grafo_automatico()
+        print("Grafo generado de forma automatica :  ", grafo_and_posiciones)
+
+        print(grafo_and_posiciones["grafo"][0]["name"])
+        print(grafo_and_posiciones["grafo"][0]["aristas"])
+
+        for i, fila in enumerate(self.frameEstados.scrollable_frame.winfo_children()): # Lee los hijos del frame scroll
+
+            print("INDICE : ", i)
+            #entry.delete(0, END)  # Eliminar cualquier texto existente
+            fila.winfo_children()[1].delete(0, END)
+            fila.winfo_children()[2].delete(0, END)
+            fila.winfo_children()[3].delete(0, END)
+            fila.winfo_children()[4].delete(0, END)
+
+            name = fila.winfo_children()[1].insert(0, grafo_and_posiciones["grafo"][i]["name"])
+            posX = fila.winfo_children()[2].insert(0, int( grafo_and_posiciones["pos"][i][0] ))
+            posY = fila.winfo_children()[3].insert(0, int( grafo_and_posiciones["pos"][i][1] ))
+
+            letras = grafo_and_posiciones["grafo"][i]["aristas"]
+            print(letras)
+            formato_conexiones = ",".join(letras)
+
+            conexiones = fila.winfo_children()[4].insert(0, formato_conexiones)
+
+        # Restablecer el nombre original del boton de carga una ves terminado la carga 
+
+
+    def generar_grafo_automatico(self):
         # m >= 1 and m < n, m = 5, n = 5
         N = len( self.frameEstados.scrollable_frame.winfo_children() )
-        M = random.randint(1, N-1)
-        # Grafo Barabasi-Albert con N nodos y M conexiones por cada nuevo nodo
-        G = nx.barabasi_albert_graph(N, M)
-        print(G.nodes(), "    ", G.edges())
-       
-       # Generar una lista de letras para los nuevos nodos
-        letras = list(string.ascii_uppercase[:N])
-        
-        # Crear un mapeo de números a letras
-        mapeo = {i: letras[i] for i in range(N)} # -->  {0:"A", ... }
+        M = random.randint(1, 4)
+        G = nx.barabasi_albert_graph(N, M) # Grafo Barabasi-Albert con N nodos y M conexiones por cada nuevo nodo
+
+        if N > 27:
+            letras = list(string.ascii_uppercase[:N] + string.ascii_lowercase[: N-26 ])
+        else:
+            letras = list(string.ascii_uppercase[:N]) # Generacion de lista de letras para los nuevos nodos
+
+        print(letras)    
+        mapeo = {i: letras[i] for i in range(N)} #mapeo de números a letras  -->  {0:"A", ... }
         # Convertir las aristas de números a letras usando el mapeo
         edges_letras = [(mapeo[u], mapeo[v]) for u, v in G.edges()] # [(0, 1), (0, 2), (0, 3)]  -->   [('A', 'B'), ('A', 'C'), ('A', 'D')]
-        
         posiciones = nx.spring_layout(G)
+        pos = []
         for nodo, posicion in posiciones.items():
-            print(posicion + 10)
+            pos.append( posicion * 100 )
         
-        print("-->    >> ",edges_letras)
-        print("-->",mapeo)
-        print("posiciones: ",posiciones)
-        # Renombrar los nodos del grafo utilizando el mapeo
-        G_letras = nx.relabel_nodes(G, mapeo)
-        
-        ## PENDIENT: 
-        nodos_aristas = {}
-        for arista in edges_letras:
-            nodo_a, nodo_b = arista
-            # Agregar nodo_b a la lista de aristas de nodo_a
-            if nodo_a not in nodos_aristas:
-                nodos_aristas[nodo_a] = []
-                nodos_aristas[nodo_a].append(nodo_b)
+        # apunte : Renombrar los nodos del grafo utilizando el mapeo
+        # G_letras = nx.relabel_nodes(G, mapeo)
 
-        # Paso 3: Eliminar duplicados de la lista de aristas de cada nodo (opcional)
-        #for nodo, aristas in nodos_aristas.items():
-        #    nodos_aristas[nodo] = list(set(aristas))
+        grafo = []
+        for edge in edges_letras:
+            nodo1, nodo2 = edge
+            indice = self.buscar_nodo_por_nombre(nodo1, grafo)
+            if indice != -1 :
+                grafo[indice]["aristas"].append(nodo2)
+            else:
+               grafo.append({"name": nodo1, "aristas": [nodo2]}) 
 
-        # Paso 4: Construir una lista de diccionarios con la estructura deseada
-        nodos_con_aristas = [{"name": nodo, "aristas": aristas} for nodo, aristas in nodos_aristas.items()]
-        
-        print(nodos_con_aristas)
+            print(nodo2)
+            indice = self.buscar_nodo_por_nombre(nodo2, grafo)        
+            if indice != -1:
+                grafo[indice]["aristas"].append(nodo1)
+            else:
+               grafo.append({"name": nodo2, "aristas": [nodo1]})
 
-        
-        
-        
-        
-            
+        return {"grafo":grafo, "pos": pos}
+
+    def buscar_nodo_por_nombre(self, nombre, lista):
+        for indice, nodo in enumerate(lista):
+            print(indice, nodo)
+            if nodo['name'] == nombre:
+                return indice
+        return -1    
+                 
     # ---------- Modulos de control de datos de entrada --------------
     
     def verificar_numero(self, valor):
@@ -320,6 +348,10 @@ class interfazCargaDeGrafo:
         if not (self.verificar_numero( estados_crear_input )) :
             return
         
+        if float(estados_crear_input) > 26:
+            messagebox.showwarning("Advertencia", f"' Cantidad maxima de nodos posibles: 26 !!")
+            return
+
         estadosCreados = self.frameEstados.scrollable_frame.winfo_children()
         if len(estadosCreados) > 0:
             self.clearElementsOfFrame(self.frameEstados.scrollable_frame)
