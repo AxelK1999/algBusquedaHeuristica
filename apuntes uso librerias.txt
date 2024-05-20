@@ -1,0 +1,247 @@
+El metodo pack(propiedades..) -> Indica que ese elemento o frame se añadira en el raiz (o frame especificado al crear el elemento)
+Todas las propiedades posibles que se pueden usar con el método pack en Tkinter:
+    side: Especifica en qué lado del contenedor se colocará el widget(elemento). 
+        NOTA: dos elementos de un mismo contenedor con la misma propiedad => una a lado del otro
+
+        "top": En la parte superior.
+        "bottom": En la parte inferior.
+        "left": En el lado izquierdo. 
+        "right": En el lado derecho.
+
+    fill: Define cómo debe expandirse el widget para llenar el espacio disponible.
+        "none": No se expande (valor predeterminado).
+        "x": Se expande horizontalmente.
+        "y": Se expande verticalmente.
+        "both": Se expande en ambas direcciones.
+
+    expand: Controla si el widget debe expandirse(redimensionarse) para llenar cualquier espacio adicional en el contenedor.
+        True: El widget se expande para llenar el espacio disponible adicional.
+        False: El widget no se expande para llenar el espacio adicional (valor predeterminado).
+
+    anchor: Establece la posición del widget dentro del espacio asignado.
+        Valores: 
+            "n" (north): Ancla el widget en el centro del borde superior del espacio asignado.
+            "s" (south): Ancla el widget en el centro del borde inferior del espacio asignado.
+            "e" (east): Ancla el widget en el centro del borde derecho del espacio asignado.
+            "w" (west): Ancla el widget en el centro del borde izquierdo del espacio asignado.
+            "ne" (northeast): Ancla el widget en la esquina superior derecha del espacio asignado.
+            "nw" (northwest): Ancla el widget en la esquina superior izquierda del espacio asignado.
+            "se" (southeast): Ancla el widget en la esquina inferior derecha del espacio asignado.
+            "sw" (southwest): Ancla el widget en la esquina inferior izquierda del espacio asignado.
+            "center" (predeterminado): Ancla el widget en el centro del espacio asignado.
+
+    padx: Añade un padding (espaciado) horizontal externo.
+        Valor: Número de píxeles a añadir a la izquierda y derecha del widget.
+
+    pady: Añade un padding (espaciado) vertical externo.
+        Valor: Número de píxeles a añadir arriba y abajo del widget.
+
+    ipadx: Añade un padding (espaciado) horizontal interno.
+        Valor: Número de píxeles a añadir al contenido interno del widget en los lados izquierdo y derecho.
+
+    ipady: Añade un padding (espaciado) vertical interno.
+        Valor: Número de píxeles a añadir al contenido interno del widget arriba y abajo.
+
+----------------------------------------------------------------------------------------------------------------------
+
+    def activar_frame2(self):
+            self.frame2.pack(fill="both", expand=True)  # Activar el frame 2
+        
+    def desactivar_frame2(self):
+        self.frame2.pack_forget()  # Desactivar el frame 2
+
+-----------------------------------------------------------------------------------------------------------------------
+El método place() en Tkinter se utiliza para posicionar un widget en un contenedor utilizando coordenadas absolutas o relativas. :
+
+        x: Especifica la coordenada x (horizontal) del punto de origen del widget en relación con el borde izquierdo del contenedor.
+        y: Especifica la coordenada y (vertical) del punto de origen del widget en relación con el borde superior del contenedor.
+        relx: Especifica la posición relativa en el eje x del punto de origen del widget en relación con el ancho del contenedor. El valor debe estar entre 0.0 y 1.0, donde 0.0 es el borde izquierdo del contenedor y 1.0 es el borde derecho.
+        rely: Especifica la posición relativa en el eje y del punto de origen del widget en relación con la altura del contenedor. El valor debe estar entre 0.0 y 1.0, donde 0.0 es el borde superior del contenedor y 1.0 es el borde inferior.
+        anchor: Especifica cómo se posiciona el widget en relación con las coordenadas especificadas. Los valores posibles son "n", "s", "e", "w", "ne", "nw", "se", "sw", y "center".
+        width: Especifica el ancho del widget en píxeles.
+        height: Especifica la altura del widget en píxeles.
+        relwidth: Especifica el ancho relativo del widget en relación con el ancho del contenedor. El valor debe estar entre 0.0 y 1.0.
+        relheight: Especifica la altura relativa del widget en relación con la altura del contenedor. El valor debe estar entre 0.0 y 1.0.
+        bordermode: Especifica cómo se mide el tamaño del widget. Los valores posibles son "inside" (el tamaño incluye el borde) y "outside" (el tamaño no incluye el borde).
+
+El método place() es útil cuando necesitas un control preciso sobre la posición y el tamaño de un widget en un contenedor. 
+Por ejemplo, puedes usar place() para crear diseños complejos donde los widgets se posicionan exactamente donde lo deseas en la ventana. 
+Sin embargo, el uso excesivo de place() puede hacer que tu código sea menos flexible y más difícil de mantener, especialmente en interfaces de usuario complejas. 
+Es importante utilizar place() con moderación y considerar otras opciones como pack() o grid() dependiendo de la situación.
+-----------------------------------------------------------------------------------------------------------------------
+import tkinter as tk
+
+# Crear una ventana
+ventana = tk.Tk()
+ventana.title("Ejemplo de Grid")
+
+# Crear etiquetas de texto
+etiqueta1 = tk.Label(ventana, text="Etiqueta 1")
+etiqueta2 = tk.Label(ventana, text="Etiqueta 2")
+
+# Organizar las etiquetas en una cuadrícula
+etiqueta1.grid(row=0, column=0)
+etiqueta2.grid(row=1, column=0)
+
+# Ejecutar el bucle de eventos
+ventana.mainloop()
+
+-----------------------------------------------------------------------------------------------------------------------
+El método config en Tkinter se utiliza para configurar o modificar las propiedades de un widget(elemento) después de que ha sido creado.:
+
+        activebackground: Especifica el color de fondo cuando el widget está activo.
+        activeforeground: Especifica el color del texto cuando el widget está activo.
+        anchor: Ancla el widget dentro de su espacio asignado. Los valores posibles son "n", "s", "e", "w", "ne", "nw", "se", "sw", y "center" (valor predeterminado).
+        background o bg: Establece el color de fondo del widget.
+        bd: Establece el ancho del borde en píxeles.
+        bg: Igual que background, establece el color de fondo del widget.
+        borderwidth o bd: Establece el ancho del borde en píxeles.
+        cursor: Establece el cursor que aparecerá cuando el ratón esté sobre el widget.
+        disabledforeground: Especifica el color del texto cuando el widget está deshabilitado.
+        font: Establece la fuente del texto.
+        foreground o fg: Establece el color del texto.
+        height: Establece la altura del widget en píxeles.
+        highlightbackground: Establece el color del borde cuando el widget no tiene el foco.
+        highlightcolor: Establece el color del borde cuando el widget tiene el foco.
+        highlightthickness: Establece el grosor del borde del resaltado en píxeles.
+        padx: Añade espacio horizontal dentro del widget.
+        pady: Añade espacio vertical dentro del widget.
+        relief: Especifica el tipo de relieve del borde. Los valores posibles son "flat", "raised", "sunken", "solid", y "ridge" (valor predeterminado).
+        takefocus: Si es True, el widget puede recibir el foco con el teclado.
+        text: Establece el texto del widget.
+        textvariable: Permite vincular una variable a la propiedad de texto del widget.
+        underline: Indica qué carácter debe ser subrayado (usado generalmente para indicar acceso directo de teclado).
+        width: Establece el ancho del widget en caracteres.
+        wraplength: Especifica el ancho máximo del texto antes de que se realice un salto de línea automático.
+
+Estos son todos los parámetros que puedes configurar usando el método config en Tkinter. 
+Dependiendo del tipo de widget y de sus propiedades, algunos de estos parámetros pueden ser más relevantes que otros. 
+Por ejemplo, text y font son parámetros comunes para etiquetas de texto, mientras que activebackground y activeforeground son más comunes en botones.
+------------------------------------------------------------------------------------------------------------
+
+POSICION DEL MOUESE y EVENTOS:
+        import tkinter as tk
+
+        def print_mouse_position(event):
+            x, y = root.winfo_pointerxy()
+            print("Posición del mouse - X:", x, "Y:", y)
+
+        root = tk.Tk()
+        root.geometry("400x300")
+
+        # Asociar el evento de mover el ratón con la función print_mouse_position
+        root.bind("<Motion>", print_mouse_position)
+
+        root.mainloop()
+
+EVENTOS CON BIND:
+
+        import tkinter as tk
+
+        def button_clicked():
+            print("¡El botón fue clickeado!")
+
+        def key_pressed(event):
+            print("Tecla presionada:", event.keysym)
+
+        def mouse_motion(event):
+            print("Mouse movido a la posición X:", event.x, "Y:", event.y)
+
+        root = tk.Tk()
+
+        # Crear un botón
+        button = tk.Button(root, text="Clic aquí", command=button_clicked)
+        button.pack()
+
+        # Vincular evento de pulsación de tecla
+        root.bind("<Key>", key_pressed)
+
+        # Vincular evento de movimiento de ratón
+        root.bind("<Motion>", mouse_motion)
+
+        root.mainloop()
+
+EVENTOS INPUTS: 
+        import tkinter as tk
+
+        def start_editing(event):
+            entry.config(state=tk.NORMAL)
+            entry.focus_set()
+
+        def end_editing(event=None):
+            entry.config(state=tk.DISABLED)
+            label_text.set(entry.get())
+
+        root = tk.Tk()
+        root.title("Label Editable")
+
+        label_text = tk.StringVar()
+        label_text.set("Haz clic aquí para editar")
+
+        entry = tk.Entry(root, textvariable=label_text, state=tk.DISABLED)
+        entry.pack(pady=10, padx=10, fill=tk.X, expand=True)
+
+        entry.bind("<Return>", end_editing)
+        entry.bind("<FocusOut>", end_editing)
+
+        entry.bind("<Button-1>", start_editing)
+        entry.bind("<Return>", end_editing)
+
+        root.mainloop()
+
+-----------------------------------------------------------------------------------------------------
+        import tkinter as tk
+
+        def move_sprite(event):
+            canvas.move(sprite, 5, 0)  # Movimiento horizontal del sprite
+
+        root = tk.Tk()
+        root.title("Sprite en Canvas")
+
+        canvas = tk.Canvas(root, width=400, height=300, bg="white")
+        canvas.pack()
+
+        # Carga de la imagen completa del sprite
+        sprite_image = tk.PhotoImage(file="sprite.png")  # Reemplaza "sprite.png" con la ruta de tu imagen de sprite
+
+        # Posición, ancho y alto de la imagen en el lienzo, así como las posiciones de corte y el ancho y alto de corte en la imagen que se mostrará
+        canvas.create_image(50, 50, anchor=tk.NW, image=sprite_image, 
+                            # Especificar las posiciones de corte y el ancho y alto de corte en la imagen
+                            # x0, y0: Posición superior izquierda del área de recorte
+                            # x1, y1: Posición inferior derecha del área de recorte
+                            # width y height: Tamaño del área de recorte
+                            # En este ejemplo, estamos tomando toda la imagen sin recortar
+                            tags=("sprite",), 
+                            state=tk.NORMAL, width=100, height=100)
+
+        # Vincular el movimiento del sprite al evento de tecla presionada
+        canvas.bind("<KeyPress-Right>", move_sprite)
+
+        # Asegurarse de que el canvas reciba eventos de teclado
+        canvas.focus_set()
+
+        root.mainloop()
+-------------------------------------------------------------------------------------------------------
+
+En tkinter, los frames se pueden superponer utilizando la gestión de geometría adecuada y controlando el orden en el que se colocan los frames. 
+Puedes usar métodos como pack(), grid() o place() para posicionar y superponer los frames según tus necesidades.
+
+Aquí hay un ejemplo básico que muestra cómo superponer dos frames en tkinter:
+
+        import tkinter as tk
+
+        root = tk.Tk()
+        root.title("Superposición de Frames en Tkinter")
+        root.geometry("300x200")
+
+        # Crear el primer frame
+        frame1 = tk.Frame(root, width=200, height=100, bg="red")
+        frame1.pack(fill=tk.BOTH, expand=True)
+
+        # Crear el segundo frame
+        frame2 = tk.Frame(root, width=150, height=80, bg="blue")
+        frame2.place(x=50, y=50)  # Colocar el segundo frame en una posición específica
+
+        root.mainloop()
+
+Cantidad de niveles hasta el nivel, catidad de nodos recorridos sobre arbol, encontro el nodo ?
