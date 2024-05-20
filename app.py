@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import algBusquedaHeuristica
+import random
+import string
 
 
 class EspacioBusqueda:
@@ -65,8 +67,8 @@ class ScrollableFrameHorizontal(Frame):
 class interfazCargaDeGrafo:
     
     grafo = []
-    estadoInicial = {}
-    estadoFinal = {}
+    estadoInicial = {"name":""}
+    estadoFinal = {"name":""}
         
     def __init__(self, raiz):
         self.raiz = raiz
@@ -107,11 +109,12 @@ class interfazCargaDeGrafo:
         self.frameEstados = ScrollableFrame(self.frame)
         self.frameEstados.place(x=10, y=120)
     
-        self.btnCargaAleatoriaEstados = Button(self.frame, text="Cargar datos de estados en forma aleatorio", command = self.on_click_crear_estados)
-        self.btnCargaAleatoriaEstados.place(x=140, y= 390)
+        self.btnCargaAleatoriaEstados = Button(self.frame, text="Carga datos de estados automatico", command = self.on_click_carga_datos_grafo_automatico)
+        self.btnCargaAleatoriaEstados.place(x=290, y= 58)
+        self.btnCargaAleatoriaEstados.config(state="disabled")
         
         self.btnCargarGrafo = Button(self.frame, text="Cargar grafo", command = self.on_click_cargar_grafo)
-        self.btnCargarGrafo.place(x=200,y=425)
+        self.btnCargarGrafo.place(x=200,y=410)
     
         barra2 = Label(self.frame, text="____________________________________________________________________________________________________")
         barra2.place(x=0,y=450)
@@ -136,7 +139,7 @@ class interfazCargaDeGrafo:
         self.opcionSeleccionadaEstadoInicial = StringVar(self.frame)
         self.opcionSeleccionadaEstadoInicial.set("Ninguno")  # Opción predeterminada
            
-        self.inputEstadoInicial = OptionMenu(frame, self.opcionSeleccionadaEstadoInicial, *self.opcionesDeEstadosInicialFinal, command=self.seleccionar_opcion)
+        self.inputEstadoInicial = OptionMenu(frame, self.opcionSeleccionadaEstadoInicial, *self.opcionesDeEstadosInicialFinal, command=self.on_envent_seleccion_estado_Inicial)
         self.inputEstadoInicial.pack(side="left", padx=10, pady=5)
         
         #-------
@@ -148,7 +151,7 @@ class interfazCargaDeGrafo:
         self.opcionSeleccionadaEstadoFinal = StringVar(self.frame)
         self.opcionSeleccionadaEstadoFinal.set("Ninguno")  # Opción predeterminada
         
-        self.inputEstadoFinal = OptionMenu(frame, self.opcionSeleccionadaEstadoFinal, *self.opcionesDeEstadosInicialFinal, command=self.seleccionar_opcion)
+        self.inputEstadoFinal = OptionMenu(frame, self.opcionSeleccionadaEstadoFinal, *self.opcionesDeEstadosInicialFinal, command=self.on_envent_seleccion_estado_Final)
         self.inputEstadoFinal.pack(side="left", padx=10, pady=5)
         
     def seccionSeleccionAlgH(self,raiz):
@@ -162,7 +165,7 @@ class interfazCargaDeGrafo:
         self.lblEstadoFinal = Label(self.frame,text="Algoritmo de busqueda: ")
         self.lblEstadoFinal.place(x=100,y=570)
         
-        self.inputEstadoFinal = OptionMenu(self.frame, opcion_seleccionadaAlg, *algBusquedaOpciones, command=self.seleccionar_opcion)
+        self.inputEstadoFinal = OptionMenu(self.frame, opcion_seleccionadaAlg, *algBusquedaOpciones)
         self.inputEstadoFinal.place(x=100,y=590)
         
         funcHeuristicaOpciones = ["Linea recta", "Manhattan"]
@@ -173,13 +176,13 @@ class interfazCargaDeGrafo:
         self.lblEstadoFinal = Label(self.frame,text="Funcion heuristica: ")
         self.lblEstadoFinal.place(x=290,y=570)
         
-        self.inputEstadoFinal = OptionMenu(self.frame, opcion_seleccionadaFH, *funcHeuristicaOpciones, command=self.seleccionar_opcion)
+        self.inputEstadoFinal = OptionMenu(self.frame, opcion_seleccionadaFH, *funcHeuristicaOpciones)
         self.inputEstadoFinal.place(x=290,y=590)
         
         barra4 = Label(self.frame, text="____________________________________________________________________________________________________")
         barra4.place(x=0,y=620)
         
-        self.btnResolver = Button(self.frame, text="Ejecutar algoritmo", command = self.on_click_crear_estados)
+        self.btnResolver = Button(self.frame, text="Ejecutar algoritmo", command = self.on_click_ejecutar_algoritmo)
         self.btnResolver.place(x=180,y=650)
            
     def seccionResultado(self, raiz):
@@ -199,25 +202,82 @@ class interfazCargaDeGrafo:
         self.btnPasoAnterior.place(x=100,y=765)
         
     # Función para manejar la selección del menú desplegable
-    def on_envent_seleccion_estado_Inicial(opcion):
-        # resaltar estado seleccionado
-        # estado anterior pintar como estado no inicial o final
-        # actualizar variable con estado
-        # ejecutar verificacion de activacion de boton, ejecutar algoritmo
-        print("Opción seleccionada:", opcion)  
-    
-    def on_envent_seleccion_estado_Final(opcion):
-        # resaltar estado seleccionado
-        # estado anterior pintar como estado no inicial o final
-        # actualizar variable con estado
-        # ejecutar verificacion de activacion de boton, ejecutar algoritmo
+    def on_envent_seleccion_estado_Inicial(self, opcion):
         
+        if len(self.estadoInicial["name"]) > 0:
+            self.G.resaltar_estado(self.estadoInicial["name"], "skyblue")
+            
+        self.G.resaltar_estado(opcion)
+        self.estadoInicial["name"] = opcion
         print("Opción seleccionada:", opcion)  
     
+    def on_envent_seleccion_estado_Final(self, opcion):
+        
+        if len(self.estadoFinal["name"]) > 0:
+            self.G.resaltar_estado(self.estadoFinal["name"], "skyblue")
+            
+        self.G.resaltar_estado(opcion, "red")
+        self.estadoFinal["name"] = opcion
+        print("Opción seleccionada:", opcion)  
+    
+    def on_click_ejecutar_algoritmo(self):
+        if len(self.estadoFinal["name"]) > 0 and len(self.estadoInicial["name"]) > 0:
+            print("ejecutando algoritmo")
+        else:
+            messagebox.showinfo("Advertencia","Debe seleccionar el estado inicial y final para ejecutar el algoritmo especificado")
+                   
     def on_window_resize(self, event):
         self.titulo.place(x=event.width/3.5,y=20)
-    
-    
+     
+    def on_click_carga_datos_grafo_automatico(self):
+        # m >= 1 and m < n, m = 5, n = 5
+        N = len( self.frameEstados.scrollable_frame.winfo_children() )
+        M = random.randint(1, N-1)
+        # Grafo Barabasi-Albert con N nodos y M conexiones por cada nuevo nodo
+        G = nx.barabasi_albert_graph(N, M)
+        print(G.nodes(), "    ", G.edges())
+       
+       # Generar una lista de letras para los nuevos nodos
+        letras = list(string.ascii_uppercase[:N])
+        
+        # Crear un mapeo de números a letras
+        mapeo = {i: letras[i] for i in range(N)} # -->  {0:"A", ... }
+        # Convertir las aristas de números a letras usando el mapeo
+        edges_letras = [(mapeo[u], mapeo[v]) for u, v in G.edges()] # [(0, 1), (0, 2), (0, 3)]  -->   [('A', 'B'), ('A', 'C'), ('A', 'D')]
+        
+        posiciones = nx.spring_layout(G)
+        for nodo, posicion in posiciones.items():
+            print(posicion + 10)
+        
+        print("-->    >> ",edges_letras)
+        print("-->",mapeo)
+        print("posiciones: ",posiciones)
+        # Renombrar los nodos del grafo utilizando el mapeo
+        G_letras = nx.relabel_nodes(G, mapeo)
+        
+        ## PENDIENT: 
+        nodos_aristas = {}
+        for arista in edges_letras:
+            nodo_a, nodo_b = arista
+            # Agregar nodo_b a la lista de aristas de nodo_a
+            if nodo_a not in nodos_aristas:
+                nodos_aristas[nodo_a] = []
+                nodos_aristas[nodo_a].append(nodo_b)
+
+        # Paso 3: Eliminar duplicados de la lista de aristas de cada nodo (opcional)
+        #for nodo, aristas in nodos_aristas.items():
+        #    nodos_aristas[nodo] = list(set(aristas))
+
+        # Paso 4: Construir una lista de diccionarios con la estructura deseada
+        nodos_con_aristas = [{"name": nodo, "aristas": aristas} for nodo, aristas in nodos_aristas.items()]
+        
+        print(nodos_con_aristas)
+
+        
+        
+        
+        
+            
     # ---------- Modulos de control de datos de entrada --------------
     
     def verificar_numero(self, valor):
@@ -263,6 +323,8 @@ class interfazCargaDeGrafo:
         estadosCreados = self.frameEstados.scrollable_frame.winfo_children()
         if len(estadosCreados) > 0:
             self.clearElementsOfFrame(self.frameEstados.scrollable_frame)
+         
+        self.btnCargaAleatoriaEstados.config(state="normal")
             
         cantidadNodos = 0    
         while True:  
@@ -427,11 +489,10 @@ class interfazGrafo:
         self.ax.set_title('Grafo:')
         self.canvas.draw()
 
-    def resaltar_estados_inicial_final(self, nameEstadoInicial, nameEstadoFinal):
+    def resaltar_estado(self, nameEstado, color="green", tamaño=500):
         
-        nx.draw_networkx_nodes(self.G, self.pos, nodelist=[nameEstadoInicial], node_color='green', node_size=500)
-        nx.draw_networkx_nodes(self.G, self.pos, nodelist=[nameEstadoFinal], node_color='red', node_size=500)
-        
+        nx.draw_networkx_nodes(self.G, self.pos, nodelist=[nameEstado], node_color=color, node_size=tamaño)
+        #nx.draw_networkx_nodes(self.G, self.pos, nodelist=[nameEstadoFinal], node_color='red', node_size=500)
         self.canvas.draw()
 
     def dibujar_heurisitca_cada_nodo(self, tablaH):
@@ -471,14 +532,14 @@ if __name__ == "__main__":
 """ 
 Pendientes: 
    on_click_cargar_grafo():
-        (1) Control de datos de entrada
-        (2) Cargar nombre de nodos en deplegables de opciones de estado inicial y final
-        (3) Armado de estructura grafo para algoritmo busuqueda
-        (4) Armado de funcion de generado de grafo en pantalla dado la estrucutra anterior
+        (1) Control de datos de entrada(LISTO)
+        (2) Cargar nombre de nodos en deplegables de opciones de estado inicial y final (LISTO)
+        (3) Armado de estructura grafo para algoritmo busuqueda (LISTO)
+        (4) Armado de funcion de generado de grafo en pantalla dado la estrucutra anterior(LISTO)
         (5) Carga de datos de forma automatica
-    (6) Mover de posicion del boton de carga automatica
-    (7) Controlar que opciones de estado inicial y final no sean los mismos
-    (8) Pintar estado inicial y final al ser seleccionados
+    (6) Mover de posicion del boton de carga automatica (LSITO)
+    (7) Controlar que opciones de estado inicial y final no sean los mismos (LISTO ->  no requerido)
+    (8) Pintar estado inicial y final al ser seleccionados (LISTO)
      .....
 """
 def generar_grafo_barabasi_albert(n, m):
