@@ -102,7 +102,7 @@ class interfazCargaDeGrafo:
         self.btnCrearEstados = Button(self.frame, text="crear estados", command = self.on_click_crear_estados)
         self.btnCrearEstados.place(x=200, y= 58)
 
-        self.titleTableEstados = Label(self.frame,text="Nro.               Name(M != m)                     Pos.(x,y)                        Conexiones(M != m)          ")
+        self.titleTableEstados = Label(self.frame,text="Nro.               Name                                     Pos.(x,y)                        Conexiones            ")
         self.titleTableEstados.place(x=20, y=100)
     
         self.frameEstados = ScrollableFrame(self.frame)
@@ -157,25 +157,25 @@ class interfazCargaDeGrafo:
         
         algBusquedaOpciones = ["Escalada simple", "Maxima pendiente"]
         
-        opcion_seleccionadaAlg = StringVar(self.frame)
-        opcion_seleccionadaAlg.set(algBusquedaOpciones[0])
+        self.opcion_seleccionadaAlg = StringVar(self.frame)
+        self.opcion_seleccionadaAlg.set(algBusquedaOpciones[0])
         
         
         self.lblEstadoFinal = Label(self.frame,text="Algoritmo de busqueda: ")
         self.lblEstadoFinal.place(x=100,y=570)
         
-        self.inputEstadoFinal = OptionMenu(self.frame, opcion_seleccionadaAlg, *algBusquedaOpciones)
+        self.inputEstadoFinal = OptionMenu(self.frame, self.opcion_seleccionadaAlg, *algBusquedaOpciones)
         self.inputEstadoFinal.place(x=100,y=590)
         
         funcHeuristicaOpciones = ["Linea recta", "Manhattan"]
         
-        opcion_seleccionadaFH = StringVar(self.frame)
-        opcion_seleccionadaFH.set(funcHeuristicaOpciones[0])
+        self.opcion_seleccionadaFH = StringVar(self.frame)
+        self.opcion_seleccionadaFH.set(funcHeuristicaOpciones[0])
         
         self.lblEstadoFinal = Label(self.frame,text="Funcion heuristica: ")
         self.lblEstadoFinal.place(x=290,y=570)
         
-        self.inputEstadoFinal = OptionMenu(self.frame, opcion_seleccionadaFH, *funcHeuristicaOpciones)
+        self.inputEstadoFinal = OptionMenu(self.frame, self.opcion_seleccionadaFH, *funcHeuristicaOpciones)
         self.inputEstadoFinal.place(x=290,y=590)
         
         barra4 = Label(self.frame, text="____________________________________________________________________________________________________")
@@ -220,10 +220,23 @@ class interfazCargaDeGrafo:
         print("Opción seleccionada:", opcion)  
     
     def on_click_ejecutar_algoritmo(self):
-        if len(self.estadoFinal["name"]) > 0 and len(self.estadoInicial["name"]) > 0:
-            print("ejecutando algoritmo")
-        else:
+        if not( len(self.estadoFinal["name"]) > 0 and len(self.estadoInicial["name"]) > 0 ):
             messagebox.showinfo("Advertencia","Debe seleccionar el estado inicial y final para ejecutar el algoritmo especificado")
+            return
+        
+        if self.opcion_seleccionadaFH.get() == "Manhattan":
+            tablaH = algBusquedaHeuristica.heuristicaManhattan(self.grafo, self.estadoFinal)
+            print("Manhattan")
+        else:
+            tablaH = algBusquedaHeuristica.heuristicaLineaRecta(self.grafo, self.estadoFinal)
+            print("Linea recta")
+     
+        if self.opcion_seleccionadaAlg.get() == "Escalada simple":
+            grafoResultante = algBusquedaHeuristica.algEscaladaSimple()
+            print("Escalada simple")
+        else:
+            grafoResultante = algBusquedaHeuristica.algEscaladaSimple()
+            print("Maxima pendiente")
                    
     def on_window_resize(self, event):
         self.titulo.place(x=event.width/3.5,y=20)
@@ -357,7 +370,9 @@ class interfazCargaDeGrafo:
             self.clearElementsOfFrame(self.frameEstados.scrollable_frame)
          
         self.btnCargaAleatoriaEstados.config(state="normal")
-            
+
+        self.entradas_nombres_conexiones = []    
+
         cantidadNodos = 0    
         while True:  
             cantidadNodos = cantidadNodos + 1
@@ -366,18 +381,37 @@ class interfazCargaDeGrafo:
             frame = Frame(self.frameEstados.scrollable_frame)
             frame.config(width=500, height=30) #bg="lightblue"
             frame.pack(fill="both", expand=True)
-            
+           
+
+            entrada = {"fila": cantidadNodos, "name":StringVar(), "conexiones": StringVar()}
+            self.entradas_nombres_conexiones.append(entrada)
+
             # columnas
             Label(frame , text = cantidadNodos).place(x=15 , y=0) #nroEstado
-            Entry(frame, width=15).place(x= 80, y=0) #name
-            Entry(frame, width=4).place(x= 220, y=0) #posX
-            Entry(frame, width=4).place(x= 250, y=0) #posY
-            Entry(frame, width=17).place(x= 340, y=0) #conexiones
+            entradaName = Entry(frame, width=15, textvariable=entrada["name"]).place(x= 80, y=0) #name
+
+            entrada["name"].trace_add("write", lambda *args: self.convertir_mayusculas(cantidadNodos-1, "name", *args))
+
+            entradaPosX = Entry(frame, width=4).place(x= 220, y=0) #posX
+            entradaPosY = Entry(frame, width=4).place(x= 250, y=0) #posY
+            entradaConexiones = Entry(frame, width=17, textvariable=entrada["conexiones"]).place(x= 340, y=0) #conexiones
+            entrada["conexiones"].trace_add("write", lambda *args: self.convertir_mayusculas(cantidadNodos-1, "conexiones", *args))
           
             if (cantidadNodos + 1) > float(estados_crear_input):
                 break
-                       
-    def on_click_cargar_grafo(self):
+
+    def convertir_mayusculas(self, *args):
+        tipo_entrada = args[1]
+        fila = args[0]
+        if tipo_entrada == "name":
+            name = self.entradas_nombres_conexiones[fila]["name"].get()
+            self.entradas_nombres_conexiones[fila]["name"].set(name.upper())
+        
+        if tipo_entrada == "conexiones":
+            name = self.entradas_nombres_conexiones[fila]["conexiones"].get()
+            self.entradas_nombres_conexiones[fila]["conexiones"].set(name.upper())
+
+    def leer_grafo_cargado(self):
         self.grafo = []
         # apunte: lectura de valores de elementos del frame (estados)
         for fila in self.frameEstados.scrollable_frame.winfo_children(): # Lee los hijos del frame scroll
@@ -399,10 +433,13 @@ class interfazCargaDeGrafo:
                 return
             
             self.grafo.append({"name":name,"posicion":{"x":posX,"y":posY}, "aristas": conexiones.split(',')})
-            
+
+    def on_click_cargar_grafo(self):
+        # lee las entradasm crea la estrucutra grafo en la variable grafo global de esta clase   
+        self.leer_grafo_cargado() 
+
         self.clearFramesPartiendoIndice(self.raiz, 1)
-        
-        print("\n\nGrafo cargado: ", self.grafo,"\n")
+        #print("\n\nGrafo cargado: ", self.grafo,"\n")
         try:
             self.pintarGrafo(self.grafo)
         except Exception as e:
@@ -448,7 +485,8 @@ class interfazCargaDeGrafo:
     def clearElementsOfFrame(self, frame):
         for widget in frame.winfo_children():
             widget.destroy()
-        
+
+
           
 class interfazGrafoResultante:
     def __init__(self, raiz):
@@ -568,11 +606,20 @@ Pendientes:
         (2) Cargar nombre de nodos en deplegables de opciones de estado inicial y final (LISTO)
         (3) Armado de estructura grafo para algoritmo busuqueda (LISTO)
         (4) Armado de funcion de generado de grafo en pantalla dado la estrucutra anterior(LISTO)
-        (5) Carga de datos de forma automatica
-    (6) Mover de posicion del boton de carga automatica (LSITO)
+        (5) Carga de datos de forma automatica (LISTO)
+    (6) Mover de posicion del boton de carga automatica (LISTO)
     (7) Controlar que opciones de estado inicial y final no sean los mismos (LISTO ->  no requerido)
     (8) Pintar estado inicial y final al ser seleccionados (LISTO)
-     .....
+        # generar array de grafos de pasos
+        # alterar posiciones de nodos en grafo para definirlos en forma de arbol
+        # pintarGrafo
+        # pintar estado inicial y final
+        # pintar nodos cerrados
+        # pintar heuristica de nodos
+        # funcion estadistica (al apretar boton muestre mensaje con columnas de comparacion
+        # entre ambos algortimos : nodos explorados, solucion o minimo local encontrado, 
+        # tiempo de resolucion, Cantidad de niveles hasta el minimo u objetivo, 
+        # indicar color de nodos cerrados )
 """
 def generar_grafo_barabasi_albert(n, m):
     G = nx.barabasi_albert_graph(n, m)
@@ -580,6 +627,5 @@ def generar_grafo_barabasi_albert(n, m):
     plt.show()
     return G
 
-# Generar un grafo Barabasi-Albert con 10 nodos y 2 conexiones por cada nuevo nodo
-#grafo_barabasi_albert = generar_grafo_barabasi_albert(10, 2)
+
 
