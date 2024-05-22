@@ -182,23 +182,26 @@ class interfazCargaDeGrafo:
         barra4.place(x=0,y=620)
         
         self.btnResolver = Button(self.frame, text="Ejecutar algoritmo", command = self.on_click_ejecutar_algoritmo)
-        self.btnResolver.place(x=180,y=650)
+        self.btnResolver.place(x=185,y=655)
            
     def seccionResultado(self, raiz):
         self.lblTitleResult = Label(self.frame,text="Resultado",font=(18))
-        self.lblTitleResult.place(x=500/2.8,y=705)
+        self.lblTitleResult.place(x=500/2.6,y=705)
         
-        self.lblEstadoFinal = Label(self.frame,text="Tiempo de resolucion: ")
-        self.lblEstadoFinal.place(x=20,y=735)
+        #self.lblEstadoFinal = Label(self.frame,text="Tiempo de resolucion: ")
+        #self.lblEstadoFinal.place(x=20,y=735)
+
+        self.btnEstadisticas = Button(self.frame, text="Ver estadisticas", command = self.on_click_crear_estados)
+        self.btnEstadisticas.place(x=30,y=750)
         
         self.btnTerminar = Button(self.frame, text="Grafo completo", command = self.on_click_crear_estados)
-        self.btnTerminar.place(x=300,y=765)
+        self.btnTerminar.place(x=350,y=750)
         
         self.btnPasoSiguiente = Button(self.frame, text="Siguinte paso", command = self.on_click_crear_estados)
-        self.btnPasoSiguiente.place(x=200,y=765)
+        self.btnPasoSiguiente.place(x=240,y=750)
         
         self.btnPasoAnterior = Button(self.frame, text="Paso anterior", command = self.on_click_crear_estados)
-        self.btnPasoAnterior.place(x=100,y=765)
+        self.btnPasoAnterior.place(x=140,y=750)
         
     # Función para manejar la selección del menú desplegable
     def on_envent_seleccion_estado_Inicial(self, opcion):
@@ -207,16 +210,21 @@ class interfazCargaDeGrafo:
             self.G.resaltar_estado(self.estadoInicial["name"], "skyblue")
             
         self.G.resaltar_estado(opcion)
-        self.estadoInicial["name"] = opcion
+        self.estadoInicial = self.busquedaNodoEnGrafo(opcion)
         print("Opción seleccionada:", opcion)  
     
+    def busquedaNodoEnGrafo(self, nombreNodo):
+        for nodo in self.grafo:
+            if nodo["name"] == nombreNodo:
+                return nodo
+
     def on_envent_seleccion_estado_Final(self, opcion):
         
         if len(self.estadoFinal["name"]) > 0:
             self.G.resaltar_estado(self.estadoFinal["name"], "skyblue")
             
         self.G.resaltar_estado(opcion, "red")
-        self.estadoFinal["name"] = opcion
+        self.estadoFinal = self.busquedaNodoEnGrafo(opcion)
         print("Opción seleccionada:", opcion)  
     
     def on_click_ejecutar_algoritmo(self):
@@ -226,18 +234,54 @@ class interfazCargaDeGrafo:
         
         if self.opcion_seleccionadaFH.get() == "Manhattan":
             tablaH = algBusquedaHeuristica.heuristicaManhattan(self.grafo, self.estadoFinal)
+            messagebox.showinfo("Heuristica de cada nodo", tablaH)
             print("Manhattan")
         else:
             tablaH = algBusquedaHeuristica.heuristicaLineaRecta(self.grafo, self.estadoFinal)
+            messagebox.showinfo("Heuristica de cada nodo", tablaH)
             print("Linea recta")
      
         if self.opcion_seleccionadaAlg.get() == "Escalada simple":
-            grafoResultante = algBusquedaHeuristica.algEscaladaSimple()
+            grafo = algBusquedaHeuristica.algEscaladaSimple(tablaH, self.grafo, self.estadoInicial)
             print("Escalada simple")
         else:
-            grafoResultante = algBusquedaHeuristica.algEscaladaSimple()
+            grafo = algBusquedaHeuristica.algEscaladaSimple(tablaH, self.grafo, self.estadoInicial)
             print("Maxima pendiente")
-                   
+
+
+        #grafoInterpretado = self.eliminarAristasNoExploradas(grafo)
+        #for indice, estado in grafoInterpretado:
+         #   grafoInterpretado[i]
+
+        messagebox.showinfo("Grafo resultante", self.eliminarAristasNoExploradas(grafo))
+
+
+    def eliminarAristasNoExploradas(self, grafo):
+        for indice, estado in enumerate( grafo["grafoResultante"] ):
+            print(indice, estado)
+            i = 0
+            while True:
+                if i < indice:
+                    if grafo["grafoResultante"][i]["name"] in estado["aristas"]:
+                        estado["aristas"].remove(grafo["grafoResultante"][i]["name"])
+                else:
+                    break
+
+                i = i + 1
+            
+            if len(grafo["grafoResultante"]) > indice + 1:
+                estagosExplorados = []
+                for arista in estado["aristas"]:
+                    if grafo["grafoResultante"][indice + 1]["name"] == arista:
+                        estagosExplorados.append(arista)
+                        break
+
+                    estagosExplorados.append(arista)  
+                
+                grafo["grafoResultante"][indice]["aristas"] = estagosExplorados
+        
+        return grafo    
+
     def on_window_resize(self, event):
         self.titulo.place(x=event.width/3.5,y=20)
      
@@ -432,7 +476,7 @@ class interfazCargaDeGrafo:
             if not (self.verificarFormatoConexiones(conexiones) ):
                 return
             
-            self.grafo.append({"name":name,"posicion":{"x":posX,"y":posY}, "aristas": conexiones.split(',')})
+            self.grafo.append({"name":name,"posicion":{"x":float(posX),"y":float(posY)}, "aristas": conexiones.split(',')})
 
     def on_click_cargar_grafo(self):
         # lee las entradasm crea la estrucutra grafo en la variable grafo global de esta clase   
@@ -486,8 +530,7 @@ class interfazCargaDeGrafo:
         for widget in frame.winfo_children():
             widget.destroy()
 
-
-          
+        
 class interfazGrafoResultante:
     def __init__(self, raiz):
         self.raiz = raiz
@@ -560,7 +603,7 @@ class interfazGrafo:
         self.canvas.draw()
 
     def resaltar_estado(self, nameEstado, color="green", tamaño=500):
-        
+        print("===>",self.pos)
         nx.draw_networkx_nodes(self.G, self.pos, nodelist=[nameEstado], node_color=color, node_size=tamaño)
         #nx.draw_networkx_nodes(self.G, self.pos, nodelist=[nameEstadoFinal], node_color='red', node_size=500)
         self.canvas.draw()
