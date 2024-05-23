@@ -8,6 +8,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import algBusquedaHeuristica
 import random
 import string
+import copy
+
 
 class EspacioBusqueda:
     def __init__(self):
@@ -243,22 +245,115 @@ class interfazCargaDeGrafo:
      
         if self.opcion_seleccionadaAlg.get() == "Escalada simple":
             grafo = algBusquedaHeuristica.algEscaladaSimple(tablaH, self.grafo, self.estadoInicial)
+            self.pasosAlgSeleccionado = self.obtenerPasosAlgEscaladaSimple(copy.deepcopy(grafo))
             print("Escalada simple")
         else:
             grafo = algBusquedaHeuristica.algEscaladaSimple(tablaH, self.grafo, self.estadoInicial)
+            self.pasosAlgSeleccionado = self.obtenerPasosAlgMaximaPendiente(copy.deepcopy(grafo))
             print("Maxima pendiente")
 
+        print("----------------------------------------")
+        for paso in self.pasosAlgSeleccionado:
+            print("--> ", paso)
+        print("----------------------------------------")
+        #print("\n\n GRAFOS PASOS: ", self.obtenerPasosAlg(self.eliminarAristasNoExploradas(grafo)),"\n\n")
+        self.pintarGrafo(self.pasosAlgSeleccionado[len(self.pasosAlgSeleccionado)-1])
+        #self.pintarGrafo(self.eliminarAristasNoExploradas(grafo)["grafoResultante"])
+        #messagebox.showinfo("Grafo resultante", self.eliminarAristasNoExploradas(grafo))
 
-        #grafoInterpretado = self.eliminarAristasNoExploradas(grafo)
-        #for indice, estado in grafoInterpretado:
-         #   grafoInterpretado[i]
+    def obtenerPasosAlgMaximaPendiente(self, grafo):
+        pasosGrafos = []
+        grafoCompleto = []
+        
+        indiceEstado = 0
 
-        messagebox.showinfo("Grafo resultante", self.eliminarAristasNoExploradas(grafo))
+        grafoCompleto.append(copy.deepcopy( grafo["grafoResultante"][indiceEstado] ))
+        grafoCompleto[0]["aristas"] = []
+        grafoCompleto[0]["posicion"] = {"x":20,"y":0}
+        grafoCompleto[0]["id"] = 1
+
+        pasosGrafos.append(copy.deepcopy(grafoCompleto))
+
+        idEstados = 2 # Utilizado para distigir entre estados con el mismo nombre a la hora de pintar
+
+        posY = 0
+        posX = 20
+
+        indiceNodoActualCaminoSolucion = 0
+        indiceNodoSiguienteCS = None
+        while True:
+             
+            nodoCaminoSolucion = {}
+            posY = posY - 5
+
+            for indice ,arista in enumerate(grafo["grafoResultante"][indiceEstado]["aristas"]):
+                
+                if arista == grafo["grafoResultante"][indiceEstado + 1]["name"]:
+                    nodoCaminoSolucion = {"id": idEstados,"name": arista, "posicion":{"x": posX + 2*indice ,"y": posY}, "aristas":[]}
+                    indiceNodoSiguienteCS = len(grafoCompleto)
+                    grafoCompleto.append(copy.deepcopy(nodoCaminoSolucion))
+                    print("SE ACTUALIZO POS X")
+                else: 
+                    nodo = {"id": idEstados,"name": arista, "posicion":{"x": posX + 2*indice ,"y": posY}, "aristas":[]}
+                    grafoCompleto.append(copy.deepcopy(nodo))
+
+                grafoCompleto[indiceNodoActualCaminoSolucion]["aristas"].append(copy.deepcopy(arista))
+                pasosGrafos.append(copy.deepcopy(grafoCompleto))
+
+            indiceNodoActualCaminoSolucion = indiceNodoSiguienteCS
+            #pasosGrafos.append(grafoCompleto)
+            if nodoCaminoSolucion:
+                posX = nodoCaminoSolucion["posicion"]["x"]
+
+            idEstados = idEstados + 1
+            indiceEstado = indiceEstado + 1
+
+            print("indice: ", indiceEstado," Cantidad de estados: ",len(grafo["grafoResultante"])-1, "Grafo: ",grafo["grafoResultante"])
+            if indiceEstado > len(grafo["grafoResultante"])-1:
+                break
+        
+        #print("Grafo resultatne de Maxima pendiente : ", pasosGrafos[ len(grafo["grafoResultante"])-1 ] )
+        return pasosGrafos
 
 
+    def obtenerPasosAlgEscaladaSimple(self, grafo_):
+        pasosGrafos = []
+        grafoInterpretado = self.eliminarAristasNoExploradas(grafo_)["grafoResultante"]
+        grafo = []
+
+        indiceEstado = 0
+
+        grafo.append(copy.deepcopy(grafoInterpretado[indiceEstado]))
+        grafo[0]["aristas"] = []
+        grafo[0]["posicion"] = {"x":20,"y":0}
+
+        pasosGrafos.append(copy.deepcopy(grafo))
+        indiceG = 0
+        while True:
+            
+            aristasExploradas = [] 
+            posNodoPadre = grafo[indiceG]["posicion"]
+            for indice, arista in enumerate(grafoInterpretado[indiceEstado]["aristas"]):
+                nodo = {"name": arista, "posicion":{"x": posNodoPadre["x"] + 2*indice ,"y": posNodoPadre["y"] - 10}, "aristas":[]}
+                # Si hay mas aristas para este nodo => esta arista/ nuevo nodo esta cerrado
+                print("ARISTA : ", arista)
+                aristasExploradas.append(arista)
+                grafo[indiceG]["aristas"] = aristasExploradas
+                grafo.append(nodo)
+                pasosGrafos.append(copy.deepcopy(grafo))
+            
+            print(grafo)
+
+            indiceG = len(grafo)-1
+            indiceEstado = indiceEstado + 1
+            if indiceEstado > len(grafoInterpretado)-1:
+                break
+        
+        return pasosGrafos
+
+    # Solo aplica para resultado de algoritmo escalada simple   
     def eliminarAristasNoExploradas(self, grafo):
         for indice, estado in enumerate( grafo["grafoResultante"] ):
-            print(indice, estado)
             i = 0
             while True:
                 if i < indice:
@@ -270,16 +365,16 @@ class interfazCargaDeGrafo:
                 i = i + 1
             
             if len(grafo["grafoResultante"]) > indice + 1:
-                estagosExplorados = []
+                estadosExplorados = []
                 for arista in estado["aristas"]:
                     if grafo["grafoResultante"][indice + 1]["name"] == arista:
-                        estagosExplorados.append(arista)
+                        estadosExplorados.append(arista)
                         break
 
-                    estagosExplorados.append(arista)  
+                    estadosExplorados.append(arista)  
                 
-                grafo["grafoResultante"][indice]["aristas"] = estagosExplorados
-        
+                grafo["grafoResultante"][indice]["aristas"] = estadosExplorados
+        print("Grafo con nodos no explorados eliminados: ", grafo)
         return grafo    
 
     def on_window_resize(self, event):

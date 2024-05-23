@@ -36,11 +36,13 @@ def heuristicaManhattan(grafo, estadoFinal):
 # Parametros:
 # grafo : [{"name":"A","posicion":{"x":0,"y":0}, "aristas": ["D","B","H"]}]
 # tablaH : [{"name":"A","distancia":0}]
-# estadoInicial : {"name":"A","distancia":0}
+# estadoInicial : {"name":"A"}
 def algEscaladaSimple(tablaH, grafo, estadoInicial):
     
     resultado = { "grafoResultante": [] }
     
+    estadoInicial = buscarEstadoEnTablaH(tablaH, estadoInicial)
+
     if(estadoInicial["distancia"] == 0): # Verifica si es el estado objetivo
         estadoFinal = buscarEstadoEnGrafo(grafo, estadoInicial["name"])
         estadoFinal["aristas"] = []
@@ -85,14 +87,21 @@ def buscarEstadoEnGrafo(grafo, estadoName):
             return copy.deepcopy(nodo)
       
 
+def buscarEstadoEnTablaH(tablaH, estadoGrafo):
+    for estado in tablaH:
+        if estado["name"] == estadoGrafo["name"] : 
+            return estado
+
 # Operador(criterio): recorrer en orden alfabetico.
 # Parametros:
 # grafo : [{"name":"A","posicion":{"x":0,"y":0}, "aristas": ["D","B","H"]}]
 # tablaH : [{"name":"A","distancia":0}]
-# estadoInicial : {"name":"A","distancia":0}   
+# estadoInicial : {"name":"A"}   
 def algMaximaPendiente(tablaH, grafo, estadoInicial):
     
     resultado = { "grafoResultante": [] }
+
+    estadoInicial = buscarEstadoEnTablaH(tablaH, estadoInicial)
     
     if(estadoInicial["distancia"] == 0): # Verifica si es el estado objetivo
         estadoFinal = buscarEstadoEnGrafo(grafo, estadoInicial["name"])
