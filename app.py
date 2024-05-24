@@ -35,10 +35,10 @@ class ScrollableFrame(Frame):
 class ScrollableFrameHorizontal(Frame):
     def __init__(self, container, *args, **kwargs):
         super().__init__(container, *args, **kwargs)
-        canvas = tk.Canvas(self)
-        scrollbar = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
-        scrollbar_h = ttk.Scrollbar(self, orient="horizontal", command=canvas.xview)
-        self.scrollable_frame = ttk.Frame(canvas)
+        canvas = Canvas(self)
+        scrollbar = Scrollbar(self, orient="vertical", command=canvas.yview)
+        scrollbar_h = Scrollbar(self, orient="horizontal", command=canvas.xview)
+        self.scrollable_frame = Frame(canvas)
 
         self.scrollable_frame.bind(
             "<Configure>",
@@ -60,8 +60,7 @@ class interfazCargaDeGrafo:
     
     grafo = []
     estadoInicial = {"name":""}
-    estadoFinal = {"name":""}
-        
+    estadoFinal = {"name":""} 
     pasoActual = 0
 
     def __init__(self, raiz):
@@ -178,33 +177,47 @@ class interfazCargaDeGrafo:
         
         self.btnResolver = Button(self.frame, text="Ejecutar algoritmo", command = self.on_click_ejecutar_algoritmo)
         self.btnResolver.place(x=185,y=655)
+
+        Nota = Label(self.frame, text="Nota: Una vez cargado el grafo, seleccionado estados inicial, final y ejecutado algoritmo,\ndebera presionar cargar grafo para poder volver cambiar los estado inicial y final del mismo G")
+        Nota.place(x=0,y=705)
            
     def seccionResultado(self, raiz):
         self.lblTitleResult = Label(self.frame,text="Resultado",font=(18))
-        self.lblTitleResult.place(x=500/2.6,y=705)
+        self.lblTitleResult.place(x=500/2.6,y=750)
         
-        #self.lblEstadoFinal = Label(self.frame,text="Tiempo de resolucion: ")
-        #self.lblEstadoFinal.place(x=20,y=735)
-
-        self.btnEstadisticas = Button(self.frame, text="Ver estadisticas", command = self.on_click_crear_estados)
-        self.btnEstadisticas.place(x=30,y=750)
+        self.btnEstadisticas = Button(self.frame, text="Ver estadisticas", command = self.on_click_ver_estadisticas)
+        self.btnEstadisticas.place(x=30,y=795)
+        self.btnEstadisticas.config(state="disabled")
         
         self.btnTerminar = Button(self.frame, text="Grafo completo", command = self.on_click_grafo_completo)
-        self.btnTerminar.place(x=350,y=750)
-        
+        self.btnTerminar.place(x=350,y=795)
+        self.btnTerminar.config(state="disabled")
+
         self.btnPasoSiguiente = Button(self.frame, text="Siguinte paso", command = self.on_click_soguiente_paso)
-        self.btnPasoSiguiente.place(x=240,y=750)
+        self.btnPasoSiguiente.place(x=240,y=795)
+        self.btnPasoSiguiente.config(state="disabled")
         
         self.btnPasoAnterior = Button(self.frame, text="Paso anterior", command = self.on_click_aterior_paso)
-        self.btnPasoAnterior.place(x=140,y=750)
+        self.btnPasoAnterior.place(x=140,y=795)
+        self.btnPasoAnterior.config(state="disabled")
+
+        self.btnVerGrafoOtroAlg = Button(self.frame, text="Ver grafo alg. no seleccionado", command = self.on_click_ver_grafo_alg_noSelect)
+        self.btnVerGrafoOtroAlg.place(x=140,y=835)
+        self.btnVerGrafoOtroAlg.config(state="disabled")
+
 
     def on_click_soguiente_paso(self):
         self.clearFramesPartiendoIndice(self.raiz, 2)
-        if not self.pasoActual >= len(self.pasosAlgSeleccionado)-1:
+
+        ultimoPaso = len(self.pasosAlgSeleccionado)-1
+        if not self.pasoActual >= ultimoPaso:
             self.pasoActual = self.pasoActual + 1
 
-        self.pintarGrafoConId(self.pasosAlgSeleccionado[self.pasoActual])
-        self.G.resaltarEstadoInicialFinal(self.pasosAlgSeleccionado[self.pasoActual], self.estadoInicial["name"], self.estadoFinal["name"]) 
+        if ultimoPaso == self.pasoActual:
+            self.on_click_grafo_completo()
+        else:
+            self.pintarGrafoConId(self.pasosAlgSeleccionado[self.pasoActual])
+            self.G.resaltarEstadoInicialFinal(self.pasosAlgSeleccionado[self.pasoActual], self.estadoInicial["name"], self.estadoFinal["name"]) 
 
     def on_click_grafo_completo(self):
         self.clearFramesPartiendoIndice(self.raiz, 2)
@@ -212,16 +225,13 @@ class interfazCargaDeGrafo:
         self.pasoActual = ultimoPaso 
 
         grafo = self.pasosAlgSeleccionado[ultimoPaso]
-
         self.pintarGrafoConId(grafo)
         result = self.G.resaltarEstadoInicialFinal(grafo, self.estadoInicial["name"], self.estadoFinal["name"])
         
-        #minimoLocal = {}
-        #if not result["final"]:
-            #for nodo in grafo:
-                
-
-
+        if not result["final"]:
+            minimoLocal = self.obtenerMinimoLocal(grafo)
+            self.G.resaltar_estado(minimoLocal["id"], "orange")
+             
     def on_click_aterior_paso(self):
         self.clearFramesPartiendoIndice(self.raiz, 2)
         if self.pasoActual > 0:
@@ -229,6 +239,40 @@ class interfazCargaDeGrafo:
 
         self.pintarGrafoConId(self.pasosAlgSeleccionado[self.pasoActual])
         self.G.resaltarEstadoInicialFinal(self.pasosAlgSeleccionado[self.pasoActual], self.estadoInicial["name"], self.estadoFinal["name"]) 
+
+    def on_click_ver_grafo_alg_noSelect(self):
+        raiz = Tk()
+        raiz.title("Grafo resultante de algoritmo no seleccionado")
+        raiz.resizable(True,True) 
+        raiz.geometry("600x600")
+        
+        if self.opcion_seleccionadaAlg.get() == "Escalada simple":
+            ultimoPaso = len(self.pasosGrafoConstuctMP)-1
+            grafo = self.pasosGrafoConstuctMP[ultimoPaso]
+            alg = "MP"
+            
+        else:
+            ultimoPaso = len(self.pasosGrafoConstuctES)-1
+            grafo = self.pasosGrafoConstuctES[ultimoPaso]
+            alg = "ES"
+
+        pos = {}
+        conexiones = []
+        nodos = []
+        for nodo in grafo:
+            for arista in nodo["aristas"]:
+                conexiones.append((nodo["id"], arista))
+            pos[nodo["id"]] = ( float( nodo["posicion"]["x"] ), float( nodo["posicion"]["y"] ) )
+            nodos.append(nodo)
+       
+        G = interfazGrafo(raiz)
+        G.dibujar_grafo_por_id(nodos, conexiones, pos, "Grafo Resultante "+"("+alg+"): ")
+        result = G.resaltarEstadoInicialFinal(grafo, self.estadoInicial["name"], self.estadoFinal["name"])
+        if not result["final"]:
+            minimoLocal = self.obtenerMinimoLocal(grafo)
+            G.resaltar_estado(minimoLocal["id"], "orange")
+
+        raiz.mainloop()
 
     # Función para manejar la selección del menú desplegable
     def on_envent_seleccion_estado_Inicial(self, opcion):
@@ -260,32 +304,151 @@ class interfazCargaDeGrafo:
             return
         
         if self.opcion_seleccionadaFH.get() == "Manhattan":
-            tablaH = algBusquedaHeuristica.heuristicaManhattan(self.grafo, self.estadoFinal)
-            messagebox.showinfo("Heuristica de cada nodo", tablaH)
+            self.tablaH = algBusquedaHeuristica.heuristicaManhattan(self.grafo, self.estadoFinal)
         else:
-            tablaH = algBusquedaHeuristica.heuristicaLineaRecta(self.grafo, self.estadoFinal)
-            messagebox.showinfo("Heuristica de cada nodo", tablaH)
-     
+            self.tablaH = algBusquedaHeuristica.heuristicaLineaRecta(self.grafo, self.estadoFinal)
+
+        self.selectFH = self.opcion_seleccionadaFH.get()
+        self.GES = grafo = algBusquedaHeuristica.algEscaladaSimple(self.tablaH, self.grafo, self.estadoInicial)
+        self.pasosGrafoConstuctES = self.obtenerPasosAlgEscaladaSimple(copy.deepcopy(grafo))
+
+        self.GMP = grafo = algBusquedaHeuristica.algMaximaPendiente(self.tablaH, self.grafo, self.estadoInicial)
+        self.pasosGrafoConstuctMP = self.obtenerPasosAlgMaximaPendiente(copy.deepcopy(grafo))
+
         if self.opcion_seleccionadaAlg.get() == "Escalada simple":
-            grafo = algBusquedaHeuristica.algEscaladaSimple(tablaH, self.grafo, self.estadoInicial)
-            self.pasosAlgSeleccionado = self.obtenerPasosAlgEscaladaSimple(copy.deepcopy(grafo))
+            self.selectAlg = "ES"
+            self.pasosAlgSeleccionado = self.pasosGrafoConstuctES
         else:
-            grafo = algBusquedaHeuristica.algMaximaPendiente(tablaH, self.grafo, self.estadoInicial)
-            self.pasosAlgSeleccionado = self.obtenerPasosAlgMaximaPendiente(copy.deepcopy(grafo))
+            self.selectAlg = "MP"
+            self.pasosAlgSeleccionado = self.pasosGrafoConstuctMP
 
         self.clearFramesPartiendoIndice(self.raiz, 2)
-        # Estadisticas:
-        # (1)canidad de niveles al recorrer nodos y ver que cambia PosY
-        # (2)Cantidad de pasos = longitud del array pasosAlgSeleccionado
-        # (3)cantidad de nodos recorridos al objetivo = cantidad de nodos objetos en resultado alg = grafo
-        # (4)Verificar si en el grafo obtenido del algoritmo heuristico, se encuentra el nodo objeto final => SI
-        # De no encontrarse => el nodo del grafo con menor costo
-        # (5) tiempo en ms de cada uno
-        # ----------
-        # Botono ver tabla heurisitica
+
+        self.btnEstadisticas.config(state="normal")
+        self.btnTerminar.config(state="normal")
+        self.btnPasoAnterior.config(state="normal")
+        self.btnPasoSiguiente.config(state="normal")
+        self.btnVerGrafoOtroAlg.config(state="normal")
+
         self.pasoActual = 0
         self.pintarGrafoConId(self.pasosAlgSeleccionado[self.pasoActual])
         self.G.resaltarEstadoInicialFinal(self.pasosAlgSeleccionado[self.pasoActual], self.estadoInicial["name"], self.estadoFinal["name"])
+
+    #ESTADISTICAS: 
+
+    def on_click_ver_estadisticas(self):
+        raiz = Tk()
+        raiz.title("Estadisticas comparativa de algoritmos")
+        raiz.resizable(True,True) 
+        raiz.geometry("480x400")
+
+        #frame = ScrollableFrame(raiz)
+        #frame.place(x=0, y=0)
+
+        tituloES = Label(raiz, text="Algoritmo escalada simple", font=(18))
+        tituloES.grid(row=0, column=0)
+
+        ultimoPaso = len(self.pasosGrafoConstuctES)
+        text = "Numero de pasos : {}".format(ultimoPaso)
+        grafo = self.pasosGrafoConstuctES[ultimoPaso-1]
+        text += "\nNiveles de arbol resultante : {}".format(self.obtenerCantidadNiveles(grafo))
+
+        text += "\nEstado inicial : {}".format(self.estadoInicial["name"])
+        text += "\nEstado final : {}".format(self.estadoFinal["name"])
+
+        minimoLocal = None
+        llegoAlEstadoFinal = self.buscar_nodo_por_nombre(self.estadoFinal["name"], grafo)
+        if llegoAlEstadoFinal == -1:
+            minimoLocal = self.obtenerMinimoLocal(grafo)
+            text += "\nEstado final alcanzado : {}".format(minimoLocal["name"])
+        else:
+            text += "\nEstado final alcanzado : {}".format(self.estadoFinal["name"])
+       
+        text += "\nRuta de nodos solucion : "
+        for indice, nodo in enumerate(self.GES["grafoResultante"]):
+            if indice == 0:
+                text +="{} ".format(nodo["name"])
+            else:
+                text +="-> {} ".format(nodo["name"])
+            
+        estadisticasES = Label(raiz, text=text)
+        estadisticasES.grid(row=1, column=0)
+
+        tituloMP = Label(raiz, text="Algoritmo maxima pendiente", font=(18))
+        tituloMP.grid(row=0, column=1)
+
+        ultimoPaso = len(self.pasosGrafoConstuctMP)
+        text = "Numero de pasos : {}".format(ultimoPaso)
+        grafo = self.pasosGrafoConstuctMP[ultimoPaso-1]
+        text += "\nNiveles de arbol resultante : {}".format(self.obtenerCantidadNiveles(grafo))
+
+        text += "\nEstado inicial : {}".format(self.estadoInicial["name"])
+        text += "\nEstado final : {}".format(self.estadoFinal["name"])
+
+        minimoLocal = None
+        llegoAlEstadoFinal = self.buscar_nodo_por_nombre(self.estadoFinal["name"], grafo)
+        if llegoAlEstadoFinal == -1:
+            minimoLocal = self.obtenerMinimoLocal(grafo)
+            text += "\nEstado final alcanzado : {}".format(minimoLocal["name"])
+        else:
+            text += "\nEstado final alcanzado : {}".format(self.estadoFinal["name"])
+       
+        text += "\nRuta de nodos solucion : "
+        for indice, nodo in enumerate(self.GMP["grafoResultante"]):
+            if indice == 0:
+                text +="{} ".format(nodo["name"])
+            else:
+                text +="-> {} ".format(nodo["name"])
+            
+
+        estadisticasMP = Label(raiz, text=text)
+        estadisticasMP.grid(row=1, column=1)
+
+        text = "\n\nTabla de funcion heuristica({}):".format(self.selectFH)
+        for nodo in self.tablaH:
+            text += "\n{} : {}".format(nodo["name"], int(nodo["distancia"]))
+
+        titulo3 = Label(raiz, text=text, font=(18))
+        titulo3.grid(row=2, column=0, columnspan=2)
+
+        raiz.mainloop()
+
+    def obtenerCantidadNiveles(self, grafo):    
+        cantidadNiveles = 1
+        posY_Nivel = 0
+        for nodo in grafo:
+            if nodo["posicion"]["y"] < posY_Nivel:
+                cantidadNiveles = cantidadNiveles + 1
+                posY_Nivel = nodo["posicion"]["y"]
+
+        return cantidadNiveles
+
+    def obtenerNodosCaminoEstadoFinal(self, grafoAlg):
+        return len(grafoAlg)
+
+    def obtenerMinimoLocal(self, grafo):
+            minimoLocal = None
+            costos = self.filtrarCostosPorGrafoResultante(grafo)
+            for nodo in costos:
+
+                if minimoLocal == None:
+                    minimoLocal = nodo
+                elif nodo["distancia"] < minimoLocal["distancia"]:
+                    minimoLocal = nodo
+
+            return minimoLocal
+
+    def filtrarCostosPorGrafoResultante(self, grafo):
+        heuristicaNodos = []
+        for nodo in grafo:
+            for costo in self.tablaH:
+                if costo["name"] == nodo["name"]:
+                    nodo["distancia"] = costo["distancia"]
+                    heuristicaNodos.append(nodo)
+                    break       
+        return heuristicaNodos
+       
+    #FIN ESTADISTICAS  
 
     def obtenerPasosAlgMaximaPendiente(self, grafo):
         pasosGrafos = []
@@ -394,9 +557,9 @@ class interfazCargaDeGrafo:
                 break
         
         return pasosGrafos
-
-    # Solo aplica para resultado de algoritmo escalada simple   
+ 
     def eliminarAristasNoExploradas(self, grafo):
+        # Apunte : Solo aplica para resultado de algoritmo escalada simple
         for indice, estado in enumerate( grafo["grafoResultante"] ):
             i = 0
             while True:
@@ -451,7 +614,10 @@ class interfazCargaDeGrafo:
     def generar_grafo_automatico(self):
         # m >= 1 and m < n, m = 5, n = 5
         N = len( self.frameEstados.scrollable_frame.winfo_children() )
-        M = random.randint(1, 4)
+        if N <= 4:
+            M = N - random.randint(1, N-1)
+        else:
+            M = random.randint(1, 4)
         G = nx.barabasi_albert_graph(N, M) # Grafo Barabasi-Albert con N nodos y M conexiones por cada nuevo nodo
 
         if N > 27:
@@ -654,7 +820,7 @@ class interfazCargaDeGrafo:
         
         print(pos, nodos)
         self.G = interfazGrafo(self.raiz)
-        self.G.dibujar_grafo_por_id(nodos, conexiones, pos, "Grafo resultante")
+        self.G.dibujar_grafo_por_id(nodos, conexiones, pos, "Grafo Resultante: ")
 
     def pintarGrafo(self, grafo):
         #cantidadNodos = len(grafo)
@@ -694,8 +860,6 @@ class interfazGrafo:
         self.fig, self.ax = plt.subplots()
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
         self.canvas.get_tk_widget().pack(fill="both", expand=True)
-
-        #self.dibujar_grafo()
 
     def dibujar_grafo_por_id(self, nodos, conexiones, posiciones, titulo):
        
@@ -775,7 +939,6 @@ class interfazGrafo:
 
         return {"inicial": inicialPintado, "final": finalPintado}
 
-
     def dibujar_heurisitca_cada_nodo(self, tablaH):
         # Añadir etiquetas adicionales
         labels = {
@@ -803,10 +966,8 @@ def main():
     
     raiz.mainloop()
 
-
 if __name__ == "__main__":
     main()
-
 
 def generar_grafo_barabasi_albert(n, m):
     G = nx.barabasi_albert_graph(n, m)
