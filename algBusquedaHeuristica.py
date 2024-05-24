@@ -116,7 +116,9 @@ def algMaximaPendiente(tablaH, grafo, estadoInicial):
         
         nodo = buscarEstadoEnGrafo(grafo, estadoActual["name"])
         
+        nodo["aristas"] = eliminarAristasYaEvaluadas(resultado["grafoResultante"], nodo["aristas"])
         nodo["aristas"] = sorted(nodo["aristas"])
+
         resultado["grafoResultante"].append(nodo)
     
         for arista in nodo["aristas"]:
@@ -135,8 +137,24 @@ def algMaximaPendiente(tablaH, grafo, estadoInicial):
             break
         else:
             estadoActual = estadoSucesor
-        
+  
     return resultado
+
+
+def eliminarAristasYaEvaluadas(grafoResultante, aristasNodoActual):
+    aristasExploradas = []
+    for nodo in grafoResultante:
+        aristasExploradas.append(nodo["name"])
+        for arista in nodo["aristas"]:
+            aristasExploradas.append(arista)
+    
+    for aristaExplorada in aristasExploradas:
+        if aristaExplorada in aristasNodoActual:
+            aristasNodoActual.remove(aristaExplorada)
+    
+    return aristasNodoActual
+
+    
 
 
 #TEST:

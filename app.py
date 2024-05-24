@@ -10,15 +10,6 @@ import random
 import string
 import copy
 
-
-class EspacioBusqueda:
-    def __init__(self):
-        self.estados = ["A", "B", "C", "D", "E", "F", "G"]
-        self.conexiones = [("A", "B"), ("A", "C"), ("B", "D"), ("B", "E"), ("C", "F"), ("D", "G"), ("E", "G"),
-                           ("F", "G")]
-        self.estado_inicial = "A"
-        self.estado_final = "G"
-
 class ScrollableFrame(Frame):
     def __init__(self, container, *args, **kwargs):
         super().__init__(container, *args, **kwargs)
@@ -71,6 +62,8 @@ class interfazCargaDeGrafo:
     estadoInicial = {"name":""}
     estadoFinal = {"name":""}
         
+    pasoActual = 0
+
     def __init__(self, raiz):
         self.raiz = raiz
         
@@ -129,7 +122,7 @@ class interfazCargaDeGrafo:
         self.seccionSeleccionEstadoInicialFinal(frame)
     
         # apunte : ver propiedades y funciones de un elemento/objeto en python
-        print(dir(self.inputEstadoFinal))
+        #print(dir(self.inputEstadoFinal))
         
     def seccionSeleccionEstadoInicialFinal(self, frame, opciones=["Ninguno"]):    
         self.lblEstadoInicial = Label(frame,text="Estado inicial: ")
@@ -196,15 +189,47 @@ class interfazCargaDeGrafo:
         self.btnEstadisticas = Button(self.frame, text="Ver estadisticas", command = self.on_click_crear_estados)
         self.btnEstadisticas.place(x=30,y=750)
         
-        self.btnTerminar = Button(self.frame, text="Grafo completo", command = self.on_click_crear_estados)
+        self.btnTerminar = Button(self.frame, text="Grafo completo", command = self.on_click_grafo_completo)
         self.btnTerminar.place(x=350,y=750)
         
-        self.btnPasoSiguiente = Button(self.frame, text="Siguinte paso", command = self.on_click_crear_estados)
+        self.btnPasoSiguiente = Button(self.frame, text="Siguinte paso", command = self.on_click_soguiente_paso)
         self.btnPasoSiguiente.place(x=240,y=750)
         
-        self.btnPasoAnterior = Button(self.frame, text="Paso anterior", command = self.on_click_crear_estados)
+        self.btnPasoAnterior = Button(self.frame, text="Paso anterior", command = self.on_click_aterior_paso)
         self.btnPasoAnterior.place(x=140,y=750)
+
+    def on_click_soguiente_paso(self):
+        self.clearFramesPartiendoIndice(self.raiz, 2)
+        if not self.pasoActual >= len(self.pasosAlgSeleccionado)-1:
+            self.pasoActual = self.pasoActual + 1
+
+        self.pintarGrafoConId(self.pasosAlgSeleccionado[self.pasoActual])
+        self.G.resaltarEstadoInicialFinal(self.pasosAlgSeleccionado[self.pasoActual], self.estadoInicial["name"], self.estadoFinal["name"]) 
+
+    def on_click_grafo_completo(self):
+        self.clearFramesPartiendoIndice(self.raiz, 2)
+        ultimoPaso = len(self.pasosAlgSeleccionado)-1
+        self.pasoActual = ultimoPaso 
+
+        grafo = self.pasosAlgSeleccionado[ultimoPaso]
+
+        self.pintarGrafoConId(grafo)
+        result = self.G.resaltarEstadoInicialFinal(grafo, self.estadoInicial["name"], self.estadoFinal["name"])
         
+        #minimoLocal = {}
+        #if not result["final"]:
+            #for nodo in grafo:
+                
+
+
+    def on_click_aterior_paso(self):
+        self.clearFramesPartiendoIndice(self.raiz, 2)
+        if self.pasoActual > 0:
+            self.pasoActual = self.pasoActual - 1
+
+        self.pintarGrafoConId(self.pasosAlgSeleccionado[self.pasoActual])
+        self.G.resaltarEstadoInicialFinal(self.pasosAlgSeleccionado[self.pasoActual], self.estadoInicial["name"], self.estadoFinal["name"]) 
+
     # Función para manejar la selección del menú desplegable
     def on_envent_seleccion_estado_Inicial(self, opcion):
         
@@ -237,84 +262,99 @@ class interfazCargaDeGrafo:
         if self.opcion_seleccionadaFH.get() == "Manhattan":
             tablaH = algBusquedaHeuristica.heuristicaManhattan(self.grafo, self.estadoFinal)
             messagebox.showinfo("Heuristica de cada nodo", tablaH)
-            print("Manhattan")
         else:
             tablaH = algBusquedaHeuristica.heuristicaLineaRecta(self.grafo, self.estadoFinal)
             messagebox.showinfo("Heuristica de cada nodo", tablaH)
-            print("Linea recta")
      
         if self.opcion_seleccionadaAlg.get() == "Escalada simple":
             grafo = algBusquedaHeuristica.algEscaladaSimple(tablaH, self.grafo, self.estadoInicial)
             self.pasosAlgSeleccionado = self.obtenerPasosAlgEscaladaSimple(copy.deepcopy(grafo))
-            print("Escalada simple")
         else:
-            grafo = algBusquedaHeuristica.algEscaladaSimple(tablaH, self.grafo, self.estadoInicial)
+            grafo = algBusquedaHeuristica.algMaximaPendiente(tablaH, self.grafo, self.estadoInicial)
             self.pasosAlgSeleccionado = self.obtenerPasosAlgMaximaPendiente(copy.deepcopy(grafo))
-            print("Maxima pendiente")
 
-        print("----------------------------------------")
-        for paso in self.pasosAlgSeleccionado:
-            print("--> ", paso)
-        print("----------------------------------------")
-        #print("\n\n GRAFOS PASOS: ", self.obtenerPasosAlg(self.eliminarAristasNoExploradas(grafo)),"\n\n")
-        self.pintarGrafo(self.pasosAlgSeleccionado[len(self.pasosAlgSeleccionado)-1])
-        #self.pintarGrafo(self.eliminarAristasNoExploradas(grafo)["grafoResultante"])
-        #messagebox.showinfo("Grafo resultante", self.eliminarAristasNoExploradas(grafo))
+        self.clearFramesPartiendoIndice(self.raiz, 2)
+        # Estadisticas:
+        # (1)canidad de niveles al recorrer nodos y ver que cambia PosY
+        # (2)Cantidad de pasos = longitud del array pasosAlgSeleccionado
+        # (3)cantidad de nodos recorridos al objetivo = cantidad de nodos objetos en resultado alg = grafo
+        # (4)Verificar si en el grafo obtenido del algoritmo heuristico, se encuentra el nodo objeto final => SI
+        # De no encontrarse => el nodo del grafo con menor costo
+        # (5) tiempo en ms de cada uno
+        # ----------
+        # Botono ver tabla heurisitica
+        self.pasoActual = 0
+        self.pintarGrafoConId(self.pasosAlgSeleccionado[self.pasoActual])
+        self.G.resaltarEstadoInicialFinal(self.pasosAlgSeleccionado[self.pasoActual], self.estadoInicial["name"], self.estadoFinal["name"])
 
     def obtenerPasosAlgMaximaPendiente(self, grafo):
         pasosGrafos = []
         grafoCompleto = []
-        
         indiceEstado = 0
 
         grafoCompleto.append(copy.deepcopy( grafo["grafoResultante"][indiceEstado] ))
+        posX = (len(grafoCompleto[0]["aristas"]) / 2) * 5
+
         grafoCompleto[0]["aristas"] = []
-        grafoCompleto[0]["posicion"] = {"x":20,"y":0}
+        grafoCompleto[0]["posicion"] = {"x":posX,"y":0}
         grafoCompleto[0]["id"] = 1
 
         pasosGrafos.append(copy.deepcopy(grafoCompleto))
 
         idEstados = 2 # Utilizado para distigir entre estados con el mismo nombre a la hora de pintar
-
         posY = 0
-        posX = 20
-
         indiceNodoActualCaminoSolucion = 0
         indiceNodoSiguienteCS = None
+
         while True:
              
             nodoCaminoSolucion = {}
-            posY = posY - 5
+            posY = posY - 40
+            control = True
 
-            for indice ,arista in enumerate(grafo["grafoResultante"][indiceEstado]["aristas"]):
-                
-                if arista == grafo["grafoResultante"][indiceEstado + 1]["name"]:
-                    nodoCaminoSolucion = {"id": idEstados,"name": arista, "posicion":{"x": posX + 2*indice ,"y": posY}, "aristas":[]}
-                    indiceNodoSiguienteCS = len(grafoCompleto)
-                    grafoCompleto.append(copy.deepcopy(nodoCaminoSolucion))
-                    print("SE ACTUALIZO POS X")
-                else: 
-                    nodo = {"id": idEstados,"name": arista, "posicion":{"x": posX + 2*indice ,"y": posY}, "aristas":[]}
+            for indice, arista in enumerate(grafo["grafoResultante"][indiceEstado]["aristas"]):
+
+                control = self.contolRedundanciaMismaRama(indiceEstado, arista ,grafo["grafoResultante"])
+        
+                if len(grafo["grafoResultante"]) > indiceEstado + 1:
+                    
+                    if arista == grafo["grafoResultante"][indiceEstado + 1]["name"]:
+                        nodoCaminoSolucion = {"id": idEstados,"name": arista, "posicion":{"x": indice*8 ,"y": posY}, "aristas":[]}
+                        indiceNodoSiguienteCS = len(grafoCompleto)
+                        grafoCompleto.append(copy.deepcopy(nodoCaminoSolucion)) 
+                        control = False
+                        grafoCompleto[indiceNodoActualCaminoSolucion]["aristas"].append(copy.deepcopy(idEstados))
+                        idEstados = idEstados + 1
+
+                if control: 
+                    nodo = {"id": idEstados,"name": arista, "posicion":{"x": indice*8 ,"y": posY}, "aristas":[]}
                     grafoCompleto.append(copy.deepcopy(nodo))
+                    grafoCompleto[indiceNodoActualCaminoSolucion]["aristas"].append(copy.deepcopy(idEstados))
+                    idEstados = idEstados + 1
 
-                grafoCompleto[indiceNodoActualCaminoSolucion]["aristas"].append(copy.deepcopy(arista))
                 pasosGrafos.append(copy.deepcopy(grafoCompleto))
+                control = True
 
             indiceNodoActualCaminoSolucion = indiceNodoSiguienteCS
-            #pasosGrafos.append(grafoCompleto)
-            if nodoCaminoSolucion:
-                posX = nodoCaminoSolucion["posicion"]["x"]
-
-            idEstados = idEstados + 1
             indiceEstado = indiceEstado + 1
-
-            print("indice: ", indiceEstado," Cantidad de estados: ",len(grafo["grafoResultante"])-1, "Grafo: ",grafo["grafoResultante"])
+           
             if indiceEstado > len(grafo["grafoResultante"])-1:
                 break
-        
-        #print("Grafo resultatne de Maxima pendiente : ", pasosGrafos[ len(grafo["grafoResultante"])-1 ] )
+    
         return pasosGrafos
 
+    def contolRedundanciaMismaRama(self, indiceEstadoActual, arista, grafo):
+        indiceControlRama = 0
+        while True:
+            if not indiceControlRama < indiceEstadoActual:
+                break
+
+            print("IndiceEstado:", indiceEstadoActual, " Indice control rama: ", indiceControlRama)
+            if arista == grafo[indiceControlRama]["name"]:
+                return False
+                        
+            indiceControlRama  = indiceControlRama + 1
+        return True
 
     def obtenerPasosAlgEscaladaSimple(self, grafo_):
         pasosGrafos = []
@@ -326,23 +366,27 @@ class interfazCargaDeGrafo:
         grafo.append(copy.deepcopy(grafoInterpretado[indiceEstado]))
         grafo[0]["aristas"] = []
         grafo[0]["posicion"] = {"x":20,"y":0}
-
+        grafo[0]["id"] = 1
         pasosGrafos.append(copy.deepcopy(grafo))
         indiceG = 0
+
+        idEstados = 2
+
         while True:
             
             aristasExploradas = [] 
             posNodoPadre = grafo[indiceG]["posicion"]
             for indice, arista in enumerate(grafoInterpretado[indiceEstado]["aristas"]):
-                nodo = {"name": arista, "posicion":{"x": posNodoPadre["x"] + 2*indice ,"y": posNodoPadre["y"] - 10}, "aristas":[]}
+                nodo = {"id":idEstados,"name": arista, "posicion":{"x": posNodoPadre["x"] + 2*indice ,"y": posNodoPadre["y"] - 10}, "aristas":[]}
                 # Si hay mas aristas para este nodo => esta arista/ nuevo nodo esta cerrado
-                print("ARISTA : ", arista)
-                aristasExploradas.append(arista)
+                #print("ARISTA : ", arista)
+                aristasExploradas.append(idEstados)
                 grafo[indiceG]["aristas"] = aristasExploradas
                 grafo.append(nodo)
                 pasosGrafos.append(copy.deepcopy(grafo))
+                idEstados = idEstados + 1
             
-            print(grafo)
+            #print(grafo)
 
             indiceG = len(grafo)-1
             indiceEstado = indiceEstado + 1
@@ -374,7 +418,7 @@ class interfazCargaDeGrafo:
                     estadosExplorados.append(arista)  
                 
                 grafo["grafoResultante"][indice]["aristas"] = estadosExplorados
-        print("Grafo con nodos no explorados eliminados: ", grafo)
+
         return grafo    
 
     def on_window_resize(self, event):
@@ -383,14 +427,9 @@ class interfazCargaDeGrafo:
     def on_click_carga_datos_grafo_automatico(self):
         # Cambiar texto de boton de carga a cargando..
         grafo_and_posiciones = self.generar_grafo_automatico()
-        print("Grafo generado de forma automatica :  ", grafo_and_posiciones)
-
-        print(grafo_and_posiciones["grafo"][0]["name"])
-        print(grafo_and_posiciones["grafo"][0]["aristas"])
 
         for i, fila in enumerate(self.frameEstados.scrollable_frame.winfo_children()): # Lee los hijos del frame scroll
 
-            print("INDICE : ", i)
             #entry.delete(0, END)  # Eliminar cualquier texto existente
             fila.winfo_children()[1].delete(0, END)
             fila.winfo_children()[2].delete(0, END)
@@ -402,13 +441,12 @@ class interfazCargaDeGrafo:
             posY = fila.winfo_children()[3].insert(0, int( grafo_and_posiciones["pos"][i][1] ))
 
             letras = grafo_and_posiciones["grafo"][i]["aristas"]
-            print(letras)
+           
             formato_conexiones = ",".join(letras)
 
             conexiones = fila.winfo_children()[4].insert(0, formato_conexiones)
 
         # Restablecer el nombre original del boton de carga una ves terminado la carga 
-
 
     def generar_grafo_automatico(self):
         # m >= 1 and m < n, m = 5, n = 5
@@ -421,7 +459,6 @@ class interfazCargaDeGrafo:
         else:
             letras = list(string.ascii_uppercase[:N]) # Generacion de lista de letras para los nuevos nodos
 
-        print(letras)    
         mapeo = {i: letras[i] for i in range(N)} #mapeo de números a letras  -->  {0:"A", ... }
         # Convertir las aristas de números a letras usando el mapeo
         edges_letras = [(mapeo[u], mapeo[v]) for u, v in G.edges()] # [(0, 1), (0, 2), (0, 3)]  -->   [('A', 'B'), ('A', 'C'), ('A', 'D')]
@@ -442,7 +479,6 @@ class interfazCargaDeGrafo:
             else:
                grafo.append({"name": nodo1, "aristas": [nodo2]}) 
 
-            print(nodo2)
             indice = self.buscar_nodo_por_nombre(nodo2, grafo)        
             if indice != -1:
                 grafo[indice]["aristas"].append(nodo1)
@@ -453,11 +489,17 @@ class interfazCargaDeGrafo:
 
     def buscar_nodo_por_nombre(self, nombre, lista):
         for indice, nodo in enumerate(lista):
-            print(indice, nodo)
             if nodo['name'] == nombre:
                 return indice
         return -1    
-                 
+
+    def buscar_ultimo_nodo_por_nombre(self, nombre, lista):
+        result = None
+        for indice, nodo in enumerate(lista):
+            if nodo['name'] == nombre:
+                result = indice
+        return result 
+
     # ---------- Modulos de control de datos de entrada --------------
     
     def verificar_numero(self, valor):
@@ -583,7 +625,7 @@ class interfazCargaDeGrafo:
             self.pintarGrafo(self.grafo)
         except Exception as e:
             messagebox.showwarning("Advertencia", f"'{e}': Verifique conexiones a nodos inexsistentes")
-        
+    
         self.actualizarOpcionesEstadosInicialFinal(self.grafo)    
      
     def actualizarOpcionesEstadosInicialFinal(self, grafo):
@@ -596,13 +638,30 @@ class interfazCargaDeGrafo:
             elemento.destroy()
 
         self.seccionSeleccionEstadoInicialFinal(self.frameOptionMenuInputEstadosInicialFinal, opciones)
-         
+
+    def pintarGrafoConId(self, grafo):
+        pos = {}
+        conexiones = []
+        nodos = []
+
+        for nodo in grafo:
+            for arista in nodo["aristas"]:
+                #indice = self.buscar_ultimo_nodo_por_nombre(arita, grafo)
+                conexiones.append((nodo["id"], arista))
+                
+            pos[nodo["id"]] = ( float( nodo["posicion"]["x"] ), float( nodo["posicion"]["y"] ) )
+            nodos.append(nodo)
+        
+        print(pos, nodos)
+        self.G = interfazGrafo(self.raiz)
+        self.G.dibujar_grafo_por_id(nodos, conexiones, pos, "Grafo resultante")
+
     def pintarGrafo(self, grafo):
         #cantidadNodos = len(grafo)
         pos = {}
         conexiones = []
         nodos = []
-        
+        print("-->",grafo)
         for nodo in grafo:
             for arita in nodo["aristas"]:
                 conexiones.append((nodo["name"],arita))
@@ -626,45 +685,9 @@ class interfazCargaDeGrafo:
             widget.destroy()
 
         
-class interfazGrafoResultante:
-    def __init__(self, raiz):
-        self.raiz = raiz
-        self.espacio_busqueda = EspacioBusqueda()
-
-        self.frame = Frame(self.raiz)
-        self.frame.pack(side="bottom",fill=BOTH, expand=True)
-
-        self.fig, self.ax = plt.subplots()
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
-        self.canvas.get_tk_widget().pack(fill="both", expand=True)
-
-        self.dibujar_grafo()
-
-    def dibujar_grafo(self):
-        G = nx.Graph()
-        G.add_nodes_from(self.espacio_busqueda.estados)
-        G.add_edges_from(self.espacio_busqueda.conexiones)
-
-        pos = nx.spring_layout(G)  # Algoritmo de disposición de nodos
-        print(pos)
-        nx.draw_networkx_nodes(G, pos, node_size=700, node_color='skyblue')
-        nx.draw_networkx_edges(G, pos, width=2)
-        nx.draw_networkx_labels(G, pos, font_size=12, font_family='sans-serif')
-
-        # Resaltar estado inicial y final
-        nx.draw_networkx_nodes(G, pos, nodelist=[self.espacio_busqueda.estado_inicial],
-                               node_color='green', node_size=700)
-        nx.draw_networkx_nodes(G, pos, nodelist=[self.espacio_busqueda.estado_final],
-                               node_color='red', node_size=700)
-
-        self.ax.set_title('Grafo resultante: ')
-        self.canvas.draw()
-
 class interfazGrafo:
     def __init__(self, raiz):
         self.raiz = raiz
-        self.espacio_busqueda = EspacioBusqueda()
-
         self.frame = Frame(self.raiz)
         self.frame.pack(side="top" , fill=BOTH, expand=True)
 
@@ -674,9 +697,38 @@ class interfazGrafo:
 
         #self.dibujar_grafo()
 
+    def dibujar_grafo_por_id(self, nodos, conexiones, posiciones, titulo):
+       
+        self.G = nx.Graph()
+        
+        self.nodos = nodos
+        self.conexiones = conexiones
+        self.pos = posiciones
+
+        for nodo in nodos:
+            self.G.add_node(nodo["id"], label=nodo["name"]) 
+
+        #self.G.add_nodes_from(nodos)
+        self.G.add_edges_from(conexiones)
+    
+        nx.draw_networkx_nodes(self.G, pos=self.pos, node_size=300, node_color='skyblue',label=True)
+        #nx.draw_networkx_labels(self.G, pos=self.pos, font_size=10, font_family='sans-serif')
+
+        labels = nx.get_node_attributes(self.G, 'label')
+        nx.draw_networkx_labels(self.G, pos=self.pos, labels=labels, font_size=10, font_family='sans-serif')
+
+        
+        nx.draw_networkx_edges(self.G, pos=self.pos, width=2)
+      
+        self.ax.margins(0.2)
+        self.ax.set_title(titulo)
+        self.canvas.draw()
+
     def dibujar_grafo(self, nodos, conexiones, posiciones):
         self.G = nx.Graph()
         
+        print(nodos,"  -------------- ", conexiones, " ----------------- ", posiciones)
+
         self.nodos = nodos
         self.conexiones = conexiones
         self.pos = posiciones
@@ -698,10 +750,31 @@ class interfazGrafo:
         self.canvas.draw()
 
     def resaltar_estado(self, nameEstado, color="green", tamaño=500):
-        print("===>",self.pos)
         nx.draw_networkx_nodes(self.G, self.pos, nodelist=[nameEstado], node_color=color, node_size=tamaño)
         #nx.draw_networkx_nodes(self.G, self.pos, nodelist=[nameEstadoFinal], node_color='red', node_size=500)
         self.canvas.draw()
+
+
+     #def resaltarEstadosCerrados():
+
+    def limpiar():
+        plt.cla()
+
+    def resaltarEstadoInicialFinal(self, grafo, estadoInicial, estadoFinal):
+        inicialPintado = False
+        finalPintado = False
+        print("GRAFO: ", self.G)
+        for nodo in grafo:
+            if nodo["name"] == estadoInicial:
+                self.resaltar_estado(color="green",nameEstado=nodo["id"])
+                inicialPintado = True
+
+            if nodo["name"] == estadoFinal:
+                self.resaltar_estado(color="red",nameEstado=nodo["id"])
+                finalPintado = True
+
+        return {"inicial": inicialPintado, "final": finalPintado}
+
 
     def dibujar_heurisitca_cada_nodo(self, tablaH):
         # Añadir etiquetas adicionales
@@ -720,7 +793,7 @@ def main():
     raiz = Tk()
     raiz.title("Espacio de Búsqueda")
     raiz.resizable(False,False) # Si se permitira redimencionar el tamaño en alto y ancho
-    raiz.geometry("1080x800") # Alto y ancho de la ventana => Se especifica esta propiedad a los Frame para que el raiz se adapte a los mismos
+    raiz.geometry("1080x900") # Ancho y alto de la ventana => Se especifica esta propiedad a los Frame para que el raiz se adapte a los mismos
     
     interfazCargaDeGrafo(raiz)
     #interfazGrafoResultante(raiz)
@@ -735,30 +808,6 @@ if __name__ == "__main__":
     main()
 
 
-
-
-""" 
-Pendientes: 
-   on_click_cargar_grafo():
-        (1) Control de datos de entrada(LISTO)
-        (2) Cargar nombre de nodos en deplegables de opciones de estado inicial y final (LISTO)
-        (3) Armado de estructura grafo para algoritmo busuqueda (LISTO)
-        (4) Armado de funcion de generado de grafo en pantalla dado la estrucutra anterior(LISTO)
-        (5) Carga de datos de forma automatica (LISTO)
-    (6) Mover de posicion del boton de carga automatica (LISTO)
-    (7) Controlar que opciones de estado inicial y final no sean los mismos (LISTO ->  no requerido)
-    (8) Pintar estado inicial y final al ser seleccionados (LISTO)
-        # generar array de grafos de pasos
-        # alterar posiciones de nodos en grafo para definirlos en forma de arbol
-        # pintarGrafo
-        # pintar estado inicial y final
-        # pintar nodos cerrados
-        # pintar heuristica de nodos
-        # funcion estadistica (al apretar boton muestre mensaje con columnas de comparacion
-        # entre ambos algortimos : nodos explorados, solucion o minimo local encontrado, 
-        # tiempo de resolucion, Cantidad de niveles hasta el minimo u objetivo, 
-        # indicar color de nodos cerrados )
-"""
 def generar_grafo_barabasi_albert(n, m):
     G = nx.barabasi_albert_graph(n, m)
     nx.draw(G, with_labels=True)
