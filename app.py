@@ -32,30 +32,6 @@ class ScrollableFrame(Frame):
         self.canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
-class ScrollableFrameHorizontal(Frame):
-    def __init__(self, container, *args, **kwargs):
-        super().__init__(container, *args, **kwargs)
-        canvas = Canvas(self)
-        scrollbar = Scrollbar(self, orient="vertical", command=canvas.yview)
-        scrollbar_h = Scrollbar(self, orient="horizontal", command=canvas.xview)
-        self.scrollable_frame = Frame(canvas)
-
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(
-                scrollregion=canvas.bbox("all")
-            )
-        )
-
-        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-
-        canvas.configure(yscrollcommand=scrollbar.set)
-        canvas.configure(xscrollcommand=scrollbar_h.set)
-
-        scrollbar_h.pack(side="bottom", fill="x")
-        scrollbar.pack(side="right", fill="y")
-        canvas.pack(side="left", fill="both", expand=True)
-
 class interfazCargaDeGrafo:
     
     grafo = []
@@ -67,7 +43,7 @@ class interfazCargaDeGrafo:
         self.raiz = raiz
         
         self.frame = Frame(raiz)
-        self.frame.config(width=500, height=500) #bg="lightblue"
+        self.frame.config(width=500, height=1000) #bg="lightblue"
         self.frame.pack(side="left", fill="both", expand=True)
     
         #self.frame.bind("<Configure>", self.on_window_resize) # responsive
@@ -282,7 +258,7 @@ class interfazCargaDeGrafo:
             
         self.G.resaltar_estado(opcion)
         self.estadoInicial = self.busquedaNodoEnGrafo(opcion)
-        print("Opción seleccionada:", opcion)  
+        #print("Opción seleccionada:", opcion)  
     
     def busquedaNodoEnGrafo(self, nombreNodo):
         for nodo in self.grafo:
@@ -296,9 +272,14 @@ class interfazCargaDeGrafo:
             
         self.G.resaltar_estado(opcion, "red")
         self.estadoFinal = self.busquedaNodoEnGrafo(opcion)
-        print("Opción seleccionada:", opcion)  
+        #print("Opción seleccionada:", opcion)  
     
     def on_click_ejecutar_algoritmo(self):
+
+        if self.opcionSeleccionadaEstadoInicial.get() == "Ninguno" or self.opcionSeleccionadaEstadoFinal.get() == "Ninguno":
+            messagebox.showinfo("Advertencia","Debe seleccionar el estado inicial y final para ejecutar el algoritmo especificado")
+            return
+        
         if not( len(self.estadoFinal["name"]) > 0 and len(self.estadoInicial["name"]) > 0 ):
             messagebox.showinfo("Advertencia","Debe seleccionar el estado inicial y final para ejecutar el algoritmo especificado")
             return
@@ -512,7 +493,7 @@ class interfazCargaDeGrafo:
             if not indiceControlRama < indiceEstadoActual:
                 break
 
-            print("IndiceEstado:", indiceEstadoActual, " Indice control rama: ", indiceControlRama)
+            #print("IndiceEstado:", indiceEstadoActual, " Indice control rama: ", indiceControlRama)
             if arista == grafo[indiceControlRama]["name"]:
                 return False
                         
@@ -818,7 +799,7 @@ class interfazCargaDeGrafo:
             pos[nodo["id"]] = ( float( nodo["posicion"]["x"] ), float( nodo["posicion"]["y"] ) )
             nodos.append(nodo)
         
-        print(pos, nodos)
+        #print(pos, nodos)
         self.G = interfazGrafo(self.raiz)
         self.G.dibujar_grafo_por_id(nodos, conexiones, pos, "Grafo Resultante: ")
 
@@ -827,7 +808,7 @@ class interfazCargaDeGrafo:
         pos = {}
         conexiones = []
         nodos = []
-        print("-->",grafo)
+        #print("-->",grafo)
         for nodo in grafo:
             for arita in nodo["aristas"]:
                 conexiones.append((nodo["name"],arita))
@@ -849,8 +830,7 @@ class interfazCargaDeGrafo:
     def clearElementsOfFrame(self, frame):
         for widget in frame.winfo_children():
             widget.destroy()
-
-        
+       
 class interfazGrafo:
     def __init__(self, raiz):
         self.raiz = raiz
@@ -859,7 +839,7 @@ class interfazGrafo:
 
         self.fig, self.ax = plt.subplots()
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
-        self.canvas.get_tk_widget().pack(fill="both", expand=True)
+        self.canvas.get_tk_widget().pack(fill="both", expand=False)
 
     def dibujar_grafo_por_id(self, nodos, conexiones, posiciones, titulo):
        
@@ -891,7 +871,7 @@ class interfazGrafo:
     def dibujar_grafo(self, nodos, conexiones, posiciones):
         self.G = nx.Graph()
         
-        print(nodos,"  -------------- ", conexiones, " ----------------- ", posiciones)
+        #print(nodos,"  -------------- ", conexiones, " ----------------- ", posiciones)
 
         self.nodos = nodos
         self.conexiones = conexiones
@@ -927,7 +907,7 @@ class interfazGrafo:
     def resaltarEstadoInicialFinal(self, grafo, estadoInicial, estadoFinal):
         inicialPintado = False
         finalPintado = False
-        print("GRAFO: ", self.G)
+        #print("GRAFO: ", self.G)
         for nodo in grafo:
             if nodo["name"] == estadoInicial:
                 self.resaltar_estado(color="green",nameEstado=nodo["id"])
@@ -952,28 +932,41 @@ class interfazGrafo:
         #for node, (x, y) in self.pos.items():
         #    self.ax.annotate(labels[node], (x, y), textcoords="offset points", xytext=(30, -5), ha='center')
 
+def frameScrollVerticalPrincipal(raiz):
+    marco_principal = Frame(raiz)
+    marco_principal.pack(fill=BOTH, expand=True)
+
+    canvas = Canvas(marco_principal)
+    canvas.pack(side=LEFT, fill=BOTH, expand=True)
+
+    scrollbar = Scrollbar(marco_principal, orient=VERTICAL, command=canvas.yview)
+    scrollbar.pack(side=RIGHT, fill=Y)
+
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    marco_interno = Frame(canvas)
+    canvas.create_window((0, 0), window=marco_interno, anchor="nw")
+
+    def actualizar_scroll(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+
+    marco_interno.bind("<Configure>", actualizar_scroll)
+
+    return marco_interno
+
 def main():
     raiz = Tk()
     raiz.title("Espacio de Búsqueda")
-    raiz.resizable(False,False) # Si se permitira redimencionar el tamaño en alto y ancho
-    raiz.geometry("1080x900") # Ancho y alto de la ventana => Se especifica esta propiedad a los Frame para que el raiz se adapte a los mismos
-    
-    interfazCargaDeGrafo(raiz)
-    #interfazGrafoResultante(raiz)
-    #interfazGrafo(raiz)
-    
-    algBusquedaHeuristica.test()
-    
+    raiz.resizable(False,True) # Si se permitira redimencionar el tamaño en alto y ancho
+    raiz.geometry("1150x900") # Ancho y alto de la ventana => Se especifica esta propiedad a los Frame para que el raiz se adapte a los mismos
+
+    marco_interno = frameScrollVerticalPrincipal(raiz)
+    interfazCargaDeGrafo(marco_interno)
+    #algBusquedaHeuristica.test()
     raiz.mainloop()
 
 if __name__ == "__main__":
     main()
-
-def generar_grafo_barabasi_albert(n, m):
-    G = nx.barabasi_albert_graph(n, m)
-    nx.draw(G, with_labels=True)
-    plt.show()
-    return G
 
 
 
