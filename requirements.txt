@@ -1,5 +1,2 @@
-eel
-eel[jinja2]
 networkx
 matplotlib
-tkinterhtml
