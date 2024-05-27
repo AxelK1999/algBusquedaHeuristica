@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import font
 import networkx as nx
 from tkinter import messagebox
 
@@ -181,6 +182,11 @@ class interfazCargaDeGrafo:
         self.btnVerGrafoOtroAlg.place(x=140,y=835)
         self.btnVerGrafoOtroAlg.config(state="disabled")
 
+        Label(self.frame, justify="center",text="----------------------------------------------").place(x=120,y=870)
+
+        self.lblReferenciasColor = Label(self.frame,font=("Helvetica", 9, "bold"), justify="center",text="Referencias color de estados:\n\nVerde = estado inicial   Rojo = estado final   Amarillo = Minimo local")
+        self.lblReferenciasColor.place(x=35,y=885)
+
 
     def on_click_soguiente_paso(self):
         self.clearFramesPartiendoIndice(self.raiz, 2)
@@ -321,16 +327,15 @@ class interfazCargaDeGrafo:
         raiz = Tk()
         raiz.title("Estadisticas comparativa de algoritmos")
         raiz.resizable(True,True) 
-        raiz.geometry("480x400")
+        raiz.geometry("550x400")
 
-        #frame = ScrollableFrame(raiz)
-        #frame.place(x=0, y=0)
+        #tituloES = Label(raiz, text="Algoritmo escalada simple", font=(18))
+        #tituloES.grid(row=0, column=0, padx=30)
 
-        tituloES = Label(raiz, text="Algoritmo escalada simple", font=(18))
-        tituloES.grid(row=0, column=0)
+        text = "ALGORITMO ESCALADA SIMPLE:"
 
         ultimoPaso = len(self.pasosGrafoConstuctES)
-        text = "Numero de pasos : {}".format(ultimoPaso)
+        text += "\n\nNumero de pasos : {}".format(ultimoPaso)
         grafo = self.pasosGrafoConstuctES[ultimoPaso-1]
         text += "\nNiveles de arbol resultante : {}".format(self.obtenerCantidadNiveles(grafo))
 
@@ -352,14 +357,16 @@ class interfazCargaDeGrafo:
             else:
                 text +="-> {} ".format(nodo["name"])
             
-        estadisticasES = Label(raiz, text=text)
-        estadisticasES.grid(row=1, column=0)
+        estadisticasES = Label(raiz, text=text, justify="left")
+        estadisticasES.grid(row=1, column=0, padx=30)
 
-        tituloMP = Label(raiz, text="Algoritmo maxima pendiente", font=(18))
-        tituloMP.grid(row=0, column=1)
+        #tituloMP = Label(raiz, text="Algoritmo maxima pendiente", font=(18))
+        #tituloMP.grid(row=0, column=1, padx=30)
+
+        text = "ALGORITMO MAXIMA PENDIENTE :"
 
         ultimoPaso = len(self.pasosGrafoConstuctMP)
-        text = "Numero de pasos : {}".format(ultimoPaso)
+        text += "\n\nNumero de pasos : {}".format(ultimoPaso)
         grafo = self.pasosGrafoConstuctMP[ultimoPaso-1]
         text += "\nNiveles de arbol resultante : {}".format(self.obtenerCantidadNiveles(grafo))
 
@@ -382,15 +389,15 @@ class interfazCargaDeGrafo:
                 text +="-> {} ".format(nodo["name"])
             
 
-        estadisticasMP = Label(raiz, text=text)
-        estadisticasMP.grid(row=1, column=1)
+        estadisticasMP = Label(raiz, text=text, justify="left")
+        estadisticasMP.grid(row=1, column=1, padx=30)
 
         text = "\n\nTabla de funcion heuristica({}):".format(self.selectFH)
         for nodo in self.tablaH:
             text += "\n{} : {}".format(nodo["name"], int(nodo["distancia"]))
 
-        titulo3 = Label(raiz, text=text, font=(18))
-        titulo3.grid(row=2, column=0, columnspan=2)
+        tablaHeuristica = Label(raiz, text=text, font=(18))
+        tablaHeuristica.grid(row=2, column=0, columnspan=2)
 
         raiz.mainloop()
 
@@ -773,7 +780,13 @@ class interfazCargaDeGrafo:
         except Exception as e:
             messagebox.showwarning("Advertencia", f"'{e}': Verifique conexiones a nodos inexsistentes")
     
-        self.actualizarOpcionesEstadosInicialFinal(self.grafo)    
+        self.actualizarOpcionesEstadosInicialFinal(self.grafo)
+
+        self.btnEstadisticas.config(state="disabled")
+        self.btnTerminar.config(state="disabled")
+        self.btnPasoAnterior.config(state="disabled")
+        self.btnPasoSiguiente.config(state="disabled")
+        self.btnVerGrafoOtroAlg.config(state="disabled")  
      
     def actualizarOpcionesEstadosInicialFinal(self, grafo):
         opciones = []
