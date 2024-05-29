@@ -1,5 +1,6 @@
 ![image](https://github.com/AxelK1999/algBusquedaHeuristica/assets/69541858/015dea14-f548-44b7-a31b-352fc32a6f68)
 
+![image](https://github.com/AxelK1999/algBusquedaHeuristica/assets/69541858/271d5160-5758-4797-a70f-d19acf0f17e0)
 
 
 **Instalaciones requeridas**
