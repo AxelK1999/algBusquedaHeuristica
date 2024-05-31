@@ -17,9 +17,9 @@ En este contexto, este trabajo se centra en la implementación y comparación de
 **Ejemplo de Uso:**
 
  - Paso 1: Ingresar la cantidad de estados que tendra el grafo y presionar `crear estados`
- - Paso 2: Ingresar los estados, posiciones y sus conexiones manualmente o presionar `cargar datos de estados automatico`.
- - Paso 3: Presionar `cargar grafo`
- - Paso 4: Seleccionar el estado inicial y final
- - Paso 5: Selecciona la heurística a utilizar (Distancia en Línea Recta o Distancia Manhattan) y el algoritmo a implementar.
+ - Paso 2: Ingresar el nombre(una letra) de cada estado vacio creado, su posicion y conexiones manualmente o presionar `cargar datos de estados automatico`.
+ - Paso 3: Presionar `cargar grafo` 
+ - Paso 4: Seleccionar el estado inicial y final por medio de los desplegables una vez cargado el grafo
+ - Paso 5: Selecciona la heurística a utilizar (Distancia en Línea Recta o Distancia Manhattan) y el algoritmo a implementar por medio de sus desplegables correspondientes.
  - Paso 6: Ejecuta los algoritmos y observa el proceso paso a paso en la interfaz de visualización `Paso siguiente`, `Paso antrior`,`Grafo completo`.
  - Paso 7: Revisa la comparación de resultados, analizando la cantidad de pasos y la capacidad de los algoritmos para superar obstáculos, presionando `ver estadisticas`.
