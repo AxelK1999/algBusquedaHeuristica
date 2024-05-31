@@ -23,3 +23,4 @@ En este contexto, este trabajo se centra en la implementación y comparación de
  - Paso 5: Selecciona la heurística a utilizar (Distancia en Línea Recta o Distancia Manhattan) y el algoritmo a implementar por medio de sus desplegables correspondientes.
  - Paso 6: Ejecuta los algoritmos y observa el proceso paso a paso en la interfaz de visualización `Paso siguiente`, `Paso antrior`,`Grafo completo`.
  - Paso 7: Revisa la comparación de resultados, analizando la cantidad de pasos y la capacidad de los algoritmos para superar obstáculos, presionando `ver estadisticas`.
+ - Paso 8: Para ver el grafo resultante del algoritmo no seleccionado, para realizar la comparacion visual, presionar `ver grafo alg. no seleccionado`
